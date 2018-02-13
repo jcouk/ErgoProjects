@@ -1,5 +1,5 @@
 # ergo-projects
-This repo is for our eligibility rules engine developed using ergo.
+This repo is for experimenting and learning Ergo.
 
 # Getting Started
 ## OS Support
