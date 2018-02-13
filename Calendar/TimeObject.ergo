@@ -1,0 +1,279 @@
+
+?object :: TimeObject :-
+	?object[startTime -> ?_startTime],
+	?object[endTime -> ?_endTime].
+
+?object[timeObject -> ?year(?month(?day(?hour(?minute))))] :-
+		?object[startTime -> ?_startTime],
+		?_startTime^^\dateTime[year -> ?_startYear, month -> ?_startMonth, day -> ?_startDay, hour -> ?_startHour, minute -> ?_startMinute]@\basetype,
+		?object[endTime -> ?_endTime],
+		?_endTime^^\dateTime[year -> ?_endYear, month -> ?_endMonth, day -> ?_endDay, hour -> ?_endHour, minute -> ?_endMinute]@\basetype,
+		?minute :: Minute[hour -> ?hour],
+		?hour[day -> ?day],
+		?day[month -> ?month],
+		dayNum(?day, ?_dayNum),
+		?month[year -> ?year],
+		?month[monthNum -> ?_monthNumber],
+		(
+			(
+				?_startYear =< ?year,
+				?_endYear >= ?year,
+				?_endYear == ?_startYear,
+				?_startMonth =< ?_monthNumber,
+				?_endMonth >= ?_monthNumber,
+				?_startMonth == ?_endMonth,
+				?_startDay =< ?_dayNum,
+				?_endDay >= ?_dayNum,
+				?_startDay == ?_endDay,
+				?_startHour =< ?hour,
+				?_endHour >= ?hour,
+				?_startHour == ?_endHour,
+				?_startMinute =< ?minute,
+				?_endMinute >= ?minute
+			);
+			(
+				?_startYear =< ?year,
+				?_endYear >= ?year,
+				?_endYear == ?_startYear,
+				?_startMonth =< ?_monthNumber,
+				?_endMonth >= ?_monthNumber,
+				?_startMonth == ?_endMonth,
+				?_startDay =< ?_dayNum,
+				?_endDay >= ?_dayNum,
+				?_startDay == ?_endDay,
+				?_startHour =< ?hour,
+				?_endHour >= ?hour,
+				?_startHour !== ?_endHour,
+				(
+					(
+						?_startHour == ?hour,
+						?_startMinute =< ?minute
+					);
+					(
+						?_endHour == ?hour,
+						?_endMinute >= ?minute
+					);
+					(
+						?_startHour + 1 =< ?hour,
+						?_endHour - 1 >= ?hour
+					)
+				)
+			);
+			(
+				?_startYear =< ?year,
+				?_endYear >= ?year,
+				?_endYear == ?_startYear,
+				?_startMonth =< ?_monthNumber,
+				?_endMonth >= ?_monthNumber,
+				?_startMonth == ?_endMonth,
+				?_startDay =< ?_dayNum,
+				?_endDay >= ?_dayNum,
+				?_startDay !== ?_endDay,
+				(
+					(
+						?_startDay == ?_dayNum,
+						(
+							(
+								?_startHour == ?hour,
+								?_startMinute =< ?minute
+							);
+							(
+								?_startHour + 1 =< ?hour
+							)
+						)
+					);
+					(
+						?_endDay == ?_dayNum,
+						(
+
+							(
+								?_endHour == ?hour,
+								?_endMinute >= ?minute
+							);
+							(
+								?_endHour - 1 >= ?hour
+							)
+						)
+					
+					);
+					(
+						?_startDay + 1 =< ?_dayNum,
+						?_endDay - 1 >= ?_dayNum
+					)
+				)
+			);
+			(
+				?_startYear =< ?year,
+				?_endYear >= ?year,
+				?_endYear == ?_startYear,
+				?_startMonth =< ?_monthNumber,
+				?_endMonth >= ?_monthNumber,
+				?_startMonth !== ?_endMonth,
+				(
+					(
+						?_startMonth == ?_monthNumber,
+						(
+							(
+								?_startDay == ?_dayNum,
+								(
+									(
+										?_startHour == ?hour,
+										?_startMinute =< ?minute
+									);
+									(
+										?_startHour + 1 =< ?hour
+									)
+								)
+							);		
+							(
+								?_startDay + 1 =< ?_dayNum
+							)
+						)
+					);
+					(
+						?_endMonth == ?_monthNumber,
+						(
+							(
+								?_endDay == ?_dayNum,
+								(
+									(
+										?_endHour == ?hour,
+										?_endMinute >= ?minute
+									);
+									(
+										?_endHour - 1 >= ?hour
+									)
+								)
+							);
+							(
+								?_endDay - 1 >= ?_dayNum
+							)
+						
+						)
+					);
+					(
+						?_startMonth + 1 =< ?_monthNumber,
+						?_endMonth - 1 >= ?_monthNumber
+					)
+				)
+			);
+			(
+				?_startYear =< ?year,
+				?_endYear >= ?year,
+				?_endYear !== ?_startYear,
+				(
+					(
+						?_startYear == ?year,
+						(
+							(
+								?_startMonth == ?_monthNumber,
+								(
+									(
+										?_startDay == ?_dayNum,
+										(
+											(
+												?_startHour == ?hour,
+												?_startMinute =< ?minute
+											);
+											(
+												?_startHour + 1 =< ?hour
+											)
+										)
+									);		
+									(
+										?_startDay + 1 =< ?_dayNum
+									)
+								)
+							);
+							(
+								?_startMonth + 1 =< ?_monthNumber
+							)
+						)
+					);
+					(
+						?_endYear == ?year,
+						(
+							(
+								?_endMonth == ?_monthNumber,
+								(
+									(
+										?_endDay == ?_dayNum,
+										(
+											(
+												?_endHour == ?hour,
+												?_endMinute >= ?minute
+											);
+											(
+												?_endHour - 1 >= ?hour
+											)
+										)
+									);
+									(
+										?_endDay - 1 >= ?_dayNum
+									)
+								)
+							);
+							(
+								?_endMonth - 1 >= ?_monthNumber
+							)
+						)
+					);
+					(
+						?_startYear + 1 =< ?year,
+						?_endYear - 1 >= ?year
+					)
+				)
+			)
+		).
+
+
+?year(?month(?day(?hour(?minute))))[sortValue -> ?sortVal] :-
+	?year :: Year,
+	?month :: Month,
+	?day :: Day,
+	?hour :: Hour,
+	?hour[sortVal -> ?_hourSort],
+	?minute :: Minute,
+	?minute[sortVal -> ?_minuteSort],
+	?month[monthNum -> ?_monthNum],
+	//dayNum(?day, ?_dayNum),
+	?_textVal \is ( ?year || ?_monthNum || ?day || ?_hourSort || ?_minuteSort),
+	?_textVal[toNumber -> ?sortVal]@\basetype.
+
+//todo
+/*
+?sortVal[timeObjectValue -> ?year(?month(?day(?hour(?minute))))] :-
+	?year :: Year,
+	?month :: Month,
+	?day :: Day,
+	?hour :: Hour,
+	?minute :: Minute,
+	?month[monthNum -> ?monthNum],
+	dayNum(?day, ?dayNum).
+*/	
+?year(?month(?day(?hour(?minute))))[dateTimeValue -> ?dateTime] :-
+	?year :: Year,
+	?month :: Month,
+	?day :: Day,
+	?hour :: Hour,
+	?minute :: Minute,
+	?month[monthNum -> ?_monthNum],
+	dayNum(?day, ?_dayNum),
+	\dateTime[toType(1, ?year, ?_monthNum, ?_dayNum, ?hour, ?minute, 0, 1, 0, 0) -> ?dateTime]@\basetype.
+//	 \dateTime[toType(1, 2017, 12, 2, 2, 33, 0, 1, 0, 0) -> ?dateTime]@\basetype.
+
+?object[timeObjectHours -> ?year(?month(?day(?hour(?))))] :-
+	?object[timeObject -> ?year(?month(?day(?hour(?))))].
+	
+	
+?object[totalHours -> ?count] :-
+	?_wholeHours \is sum{ ?_hours | ?object[timeObjectHours -> ?_hours]},
+	?_wholeminutes \is sum{ ?_minutes | ?object[timeObjectHours -> ?_minutes]},
+	?count \is ?_wholeHours + div(?_wholeminutes, 60).
+	
+TimeBetween(?startDate, ?endDate, ?time) :-
+	?startDate[sortValue -> ?_sortValStart],
+	?endDate[sortValue -> ?_sortValEnd],
+	?time[sortValue -> ?_oTime],  
+	?_oTime >= ?_sortValStart,
+	?_oTime =< ?_sortValEnd.

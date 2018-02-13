@@ -1,0 +1,37 @@
+	
+	
+	compatibleShifts(?employee, ?shift, ?_oCompShifts),
+	
+	?_totalShifts[length -> ?_size]@\btp, 
+	?_size == 0,
+	?_finalListNeedsSorting \is [?shift] ++ ?compShifts,
+	?_finalListNeedsSorting[sort -> ?finalList]@\btp
+	
+	
+	
+	compatibleShifts(?employee, ?shift, ?_oCompShifts),
+	?totalShifts \is ?_oCompShifts && [fivethLateShift, fivethMorningShift, fourthLateShift, fourthMorningShift, oneLateShift, oneMorningShift, sixthLateShift, sixthMorningShift, thirdLateShift, thirdMorningShift, twoLateShift, twoMorningShift],
+	(
+		?totalShifts[length -> ?_size]@\btp, 
+		?_size >= 1,
+		?totalShifts[ith(?_X) -> ?_independentShift]@\btp,
+		?_finalListNeedsSorting \is [?shift] ++ [?_independentShift] ++ [],
+		?_finalListNeedsSorting[sort -> ?finalList]@\btp
+	
+	);
+	(
+		?totalShifts[length -> ?_size]@\btp, 
+		?_size == 0,
+		?_finalListNeedsSorting \is [?shift] ++ [],
+		?_finalListNeedsSorting[sort -> ?finalList]@\btp	
+	);
+	(
+		?totalShifts[length -> ?_size]@\btp, 
+		?_size >= 2,
+		?totalShifts[ith(?_C) -> ?firtCompShift]@\btp, 
+		?currShifts \is [?shift] ++ [test],
+		// sorting here to remove duplicates
+		?currShifts[sort -> ?sortedCurrShifts]@\btp,
+		%shiftAssignmentItteration(?employee, ?firtCompShift, ?sortedCurrShifts, ?totalShifts, ?finalList)
+	
+	).

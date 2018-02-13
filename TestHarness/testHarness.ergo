@@ -1,0 +1,649 @@
+//'testthinpost.xml'[load_xml(post) -> ?W]@\xml.
+//'testthinpre.xml'[load_xml(pre) -> ?W]@\xml.
+
+	
+//CombineCompare	
+	
+compare(?iteration, ?instance, ?publicName, ?attrType, ?attrValue ) :-
+	compareGlobal(?iteration, ?instance, ?publicName, ?attrType, ?attrValue );
+	compareAllPersonAttributes(?iteration, ?instance, ?publicName, ?attrType, ?attrValue);
+	comparePersonAttributesUnderPersonSpecificValues(?iteration, ?instance, ?publicName, ?attrType, ?attrValue).
+	
+compareGlobal(?iteration, ?globalInstance, ?publicName, ?attrType, ?attrValue ) :-
+	compareGlobalPostAgainstPre(?iteration, ?globalInstance, ?publicName, ?attrType, ?attrValue ) ;
+	compareGlobalPreAgainstPost(?iteration, ?globalInstance, ?publicName, ?attrType, ?attrValue ).
+	
+compareAllPersonAttributes(?iteration, ?PersonID, ?publicName, ?attrType, ?attrValue) :-
+	compareAllPersonAttributesPreToPost(?iteration, ?PersonID, ?publicName, ?attrType, ?attrValue);
+	compareAllPersonAttributesPostToPre(?iteration, ?PersonID, ?publicName, ?attrType, ?attrValue).
+
+	
+comparePersonAttributesUnderPersonSpecificValues(?itteration, ?PersonID, ?ObjectType, ?attrType, ?attrValue) :-
+	comparePersonAttributesUnderPersonSpecificValuesPreToPost(?itteration, ?PersonID, ?ObjectType, ?attrType, ?attrValue) ;
+	comparePersonAttributesUnderPersonSpecificValuesPostToPre(?itteration, ?PersonID, ?ObjectType, ?attrType, ?attrValue). 
+		
+
+	
+// Global Rules	
+	
+preReturnGlobalAttributes(?attrVarFour, ?publicName, ?attrVarSix, ?attrValueOrObjectSeven) :- 
+	?_obj[?_attr -> ?_attrValueOrObjectOne]@pre,
+	?_attr == medicaidRulebaseOutputVariable,
+	?_attrValueOrObjectOne[?_attrVarTwo -> ?_attrValueOrObjectTwo]@pre,
+	?_attrValueOrObjectTwo[?_attrVarThree -> ?_attrValueOrObjectThree]@pre,
+	?_attrValueOrObjectThree[?attrVarFour -> ?_attrValueOrObjectFour]@pre,
+	?_attrValueOrObjectFour[?_attrVarFive -> ?_attrValueOrObjectFive]@pre,
+	?_attrVarFive == 'typ:attribute',
+	?_attrValueOrObjectFive[?attrVarSix -> ?_attrValueOrObjectSix]@pre,
+	?_attrValueOrObjectSix[?_attrVarSeven -> ?attrValueOrObjectSeven]@pre,
+	?_attrVarSeven \= 'typ:property',
+	preReturnObjectPublicName(?_attrValueOrObjectFive, ?publicName).
+	
+preReturnObjectPublicName(?obj, ?publicName) :-
+	?obj[attribute(id) -> ?publicName]@pre.
+
+postReturnGlobalAttributes(?attrVarFour, ?publicName, ?attrVarSix, ?attrValueOrObjectSeven) :- 
+	?_obj[?_attr -> ?_attrValueOrObjectOne]@post,
+	?_attr == medicaidRulebaseOutputVariable,
+	?_attrValueOrObjectOne[?_attrVarTwo -> ?_attrValueOrObjectTwo]@post,
+	?_attrValueOrObjectTwo[?_attrVarThree -> ?_attrValueOrObjectThree]@post,
+	?_attrValueOrObjectThree[?attrVarFour -> ?_attrValueOrObjectFour]@post,
+	?_attrValueOrObjectFour[?_attrVarFive -> ?_attrValueOrObjectFive]@post,
+	?_attrVarFive == 'typ:attribute',
+	?_attrValueOrObjectFive[?attrVarSix -> ?_attrValueOrObjectSix]@post,
+	?_attrValueOrObjectSix[?_attrVarSeven -> ?attrValueOrObjectSeven]@post,
+	?_attrVarSeven \= 'typ:property',
+	postReturnObjectPublicName(?_attrValueOrObjectFive, ?publicName).
+
+postReturnObjectPublicName(?obj, ?publicName) :-
+	?obj[attribute(id) -> ?publicName]@post.
+	
+compareGlobalPreAgainstPost(?iteration, ?globalInstance, ?publicName, ?attrType, ?attrValue ) :-
+	?iteration = 'Pre Values',
+	preReturnGlobalAttributes(?globalInstance, ?prePublicName, ?preAttrType, ?preAttrValue),
+	\if
+	(
+		postReturnGlobalAttributes(?globalInstance, ?prePublicName, ?preAttrType, ?preAttrValue)
+	)
+	\then
+	(
+		\false
+	)
+	\else
+	(	
+		\if
+		(
+			postReturnGlobalAttributes(?globalInstance, ?prePublicName, ?preAttrType, ?)
+		)
+		\then
+		(
+			?publicName = ?prePublicName,
+			?attrType = ?prePublicName,
+			?attrValue = ?preAttrValue
+		)
+		\else
+		(
+			\if
+			(
+				postReturnGlobalAttributes(?globalInstance, ?prePublicName, ?, ?)
+			)
+			\then
+			(
+				?publicName = ?prePublicName,
+				?attrType = ?prePublicName,
+				?attrValue = 'NA'
+			)
+			\else
+			(
+				\if
+				(
+					postReturnGlobalAttributes(?globalInstance, ?, ?, ?)
+				)
+				\then
+				(
+					?publicName = ?prePublicName,
+					?attrType = 'NA',
+					?attrValue = 'NA'
+				)
+				\else
+				(
+					?publicName = 'NA',
+					?attrType = 'NA',
+					?attrValue = 'NA'
+				)
+			)
+		)
+	).
+
+
+	
+	
+	
+	
+compareGlobalPostAgainstPre(?iteration, ?globalInstance, ?publicName, ?attrType, ?attrValue ) :-
+	?iteration = 'Post Values',
+	postReturnGlobalAttributes(?globalInstance, ?prePublicName, ?preAttrType, ?preAttrValue),
+	\if
+	(
+		preReturnGlobalAttributes(?globalInstance, ?prePublicName, ?preAttrType, ?preAttrValue)
+	)
+	\then
+	(
+		\false
+	)
+	\else
+	(	
+		\if
+		(
+			preReturnGlobalAttributes(?globalInstance, ?prePublicName, ?preAttrType, ?)
+		)
+		\then
+		(
+			?publicName = ?prePublicName,
+			?attrType = ?prePublicName,
+			?attrValue = ?preAttrValue
+		)
+		\else
+		(
+			\if
+			(
+				preReturnGlobalAttributes(?globalInstance, ?prePublicName, ?, ?)
+			)
+			\then
+			(
+				?publicName = ?prePublicName,
+				?attrType = ?prePublicName,
+				?attrValue = 'NA'
+			)
+			\else
+			(
+				\if
+				(
+					preReturnGlobalAttributes(?globalInstance, ?, ?, ?)
+				)
+				\then
+				(
+					?publicName = ?prePublicName,
+					?attrType = 'NA',
+					?attrValue = 'NA'
+				)
+				\else
+				(
+					?publicName = 'NA',
+					?attrType = 'NA',
+					?attrValue = 'NA'
+				)
+			)
+		)
+	).	
+	
+// End Global Rules	
+
+
+
+
+// Person Rules
+
+postReturnAllAttributesUnderPerson(?ID, ?objectName, ?objectID, ?attr, ?value)	:-
+	postReturnListOfPersonObjectsAndIdentifier(?_person, ?ID),
+	postDescend(?_person, ?_childObjects),
+	postReturnAllAttributeValues(?_childObjects, ?objectName, ?attr, ?value),
+	postReturnAllObjectIdentifiers(?_childObjects, ?_type, ?objectID).
+
+//attrValueOrObjectTwo	
+postReturnAllAttributesOnPerson(?ID, ?publicName, ?attrVarFour, ?attrValueOrObjectFive) :- 
+	postReturnListOfPersonObjectsAndIdentifier(?_personObj, ?ID), 
+	?_personObj[?_attrVarThree -> ?_attrValueOrObjectThree]@post,
+	?_attrVarThree == 'typ:attribute',
+	?_attrValueOrObjectThree[?attrVarFour -> ?_attrValueOrObjectFour]@post, 
+	?attrVarFour \=	'typ:properties',
+	?attrVarFour \=	'typ:change-point',
+	?_attrValueOrObjectFour[?_attrVarFive -> ?attrValueOrObjectFive]@post, 
+	postReturnObjectPublicName(?_attrValueOrObjectThree, ?publicName).	
+	/*
+		
+		postReturnListOfPersonObjectsAndIdentifier(?personObj, ?ID), 
+		?personObj[?attrVarThree -> ?attrValueOrObjectThree]@post,
+		?attrVarThree == 'typ:attribute',
+		?attrValueOrObjectThree[?attrVarFour -> ?attrValueOrObjectFour]@post, 
+		?attrVarFour \=	'typ:properties',
+		?attrValueOrObjectFour[?attrVarFive -> ?attrValueOrObjectFive]@post, 
+		postReturnObjectPublicName(?attrValueOrObjectThree, ?publicName).
+		
+		typ:attribute
+	 */
+	
+postChild(?X, ?Y) :-	
+	?X[?_attr -> ?Y]@post .
+	
+	// obj981
+postDescend(?X, ?Y) :-
+	postChild(?X, ?Y).
+	
+postDescend(?X, ?Y) :-
+	postChild(?X, ?Z), postChild(?Z, ?Y).	
+	
+postReturnListOfPersonObjectsAndIdentifier(?person, ?ID) :-
+	postReturnPersonParentObject(?_obj),
+	?_object[?_attrID -> ?_attrValueOrObject]@post,
+	?_attrValueOrObject[?_twoAttrID -> ?_obj]@post, 
+	?_obj[?_threeAttrID -> ?person]@post,
+	?_threeAttrID == 'typ:instance',    	
+	postReturnAllObjectIdentifiers(?person, ?_type, ?ID).
+
+postReturnPersonParentObject(?obj) :-
+	?_object[?_attrID -> ?_attrValueOrObject]@post,
+	?_attrValueOrObject[?_twoAttrID -> ?obj]@post, 
+	?obj[?_threeAttrID -> ?_threeAttrValueOrObject]@post, 
+	?_threeAttrValueOrObject == person.
+
+postReturnAllObjectIdentifiers(?Obj, ?type, ?ID) :-
+	postReturnAllInstanceObjects(?Obj, ?type),
+	?Obj[?_attrID -> ?ID]@post,
+	?_attrID = attribute(id).	
+
+postReturnAllInstanceObjects(?object, ?type) :-
+	postReturnAllObjectsExcludingGlobal(?_obj, ?type),
+	?_obj[?_attrID -> ?object]@post,
+	?_attrID = 'typ:instance'.
+	
+postReturnAllObjectsExcludingGlobal(?obj, ?type) :- 	
+	?_object[?_attrID -> ?_attrValueOrObject]@post,
+	?_attrValueOrObject[?_twoAttrID -> ?obj]@post, 
+	?obj[?_threeAttrID -> ?type]@post,	
+	?_twoAttrID == 'typ:entity',
+	?_threeAttrID == attribute(id).	
+
+postReturnAllAttributeValues(?Obj, ?objectName, ?attr, ?value) :-
+	postReturnAllObjectIdentifiers(?Obj, ?objectName, ?_ID),
+	?Obj[?_attrID -> ?_attrObject]@post,
+	?_attrID == 'typ:attribute',
+	?_attrObject[?_attrAttributeId -> ?attr]@post,
+	?_attrAttributeId == attribute(id),
+	?_attrObject[?_typeValOrProperty -> ?_finalObj]@post,
+	?_typeValOrProperty \= 'typ:properties',  // no need to include properties.
+	?_finalObj[?_finalAttr -> ?value]@post.	
+
+postReturnAllAttributesUnderPersonByEntity(?PersonID, ?ObjectType, ?valuesByObject) :-
+	?valuesByObject = setof{ ?attrValue[ ?objectName, ?ID, ?_objectIdentifier]  |  postReturnAllAttributesUnderPerson(?ID, ?objectName, ?_objectIdentifier, ?attr, ?value), ?attrValue = ?attr(?value)},
+	?PersonID = ?ID,
+	?ObjectType = ?objectName.	
+	
+// Same rules but for Pre	
+preReturnAllAttributesUnderPerson(?ID, ?objectName, ?objectIdentifier, ?attr, ?value)	:-
+	preReturnListOfPersonObjectsAndIdentifier(?_person, ?ID),
+	preDescend(?_person, ?_childObjects),
+	preReturnAllAttributeValues(?_childObjects, ?objectName, ?attr, ?value),
+	preReturnAllObjectIdentifiers(?_childObjects, ?_type, ?objectIdentifier).
+
+preReturnAllAttributesOnPerson(?ID, ?publicName, ?attrVarFour, ?attrValueOrObjectFive) :- 
+	preReturnListOfPersonObjectsAndIdentifier(?_personObj, ?ID), 
+	?_personObj[?_attrVarThree -> ?_attrValueOrObjectThree]@pre,
+	?_attrVarThree == 'typ:attribute',
+	?_attrValueOrObjectThree[?attrVarFour -> ?_attrValueOrObjectFour]@pre, 
+	?attrVarFour \=	'typ:properties',
+	?attrVarFour \=	'typ:change-point',
+	?_attrValueOrObjectFour[?_attrVarFive -> ?attrValueOrObjectFive]@pre, 
+	preReturnObjectPublicName(?_attrValueOrObjectThree, ?publicName).	
+	
+preChild(?X, ?Y) :-	
+	?X[?_attr -> ?Y]@pre .
+	
+	// obj981
+preDescend(?X, ?Y) :-
+	preChild(?X, ?Y).
+	
+preDescend(?X, ?Y) :-
+	preChild(?X, ?Z), preChild(?Z, ?Y).	
+	
+preReturnListOfPersonObjectsAndIdentifier(?person, ?ID) :-
+	preReturnPersonParentObject(?_obj),
+	?_object[?_attrID -> ?_attrValueOrObject]@pre,
+	?_attrValueOrObject[?_twoAttrID -> ?_obj]@pre, 
+	?_obj[?_threeAttrID -> ?person]@pre,
+	?_threeAttrID == 'typ:instance',    	
+	preReturnAllObjectIdentifiers(?person, ?_type, ?ID).
+
+preReturnPersonParentObject(?obj) :-
+	?_object[?_attrID -> ?_attrValueOrObject]@pre,
+	?_attrValueOrObject[?_twoAttrID -> ?obj]@pre, 
+	?obj[?_threeAttrID -> ?_threeAttrValueOrObject]@pre, 
+	?_threeAttrValueOrObject == person.
+
+preReturnAllObjectIdentifiers(?Obj, ?type, ?ID) :-
+	preReturnAllInstanceObjects(?Obj, ?type),
+	?Obj[?_attrID -> ?ID]@pre,
+	?_attrID = attribute(id).	
+
+preReturnAllInstanceObjects(?object, ?type) :-
+	preReturnAllObjectsExcludingGlobal(?_obj, ?type),
+	?_obj[?_attrID -> ?object]@pre,
+	?_attrID = 'typ:instance'.
+	
+preReturnAllObjectsExcludingGlobal(?obj, ?type) :- 	
+	?_object[?_attrID -> ?_attrValueOrObject]@pre,
+	?_attrValueOrObject[?_twoAttrID -> ?obj]@pre, 
+	?obj[?_threeAttrID -> ?type]@pre,	
+	?_twoAttrID == 'typ:entity',
+	?_threeAttrID == attribute(id).	
+
+preReturnAllAttributeValues(?Obj, ?objectName, ?attr, ?value) :-
+	preReturnAllObjectIdentifiers(?Obj, ?objectName, ?_ID),
+	?Obj[?_attrID -> ?_attrObject]@pre,
+	?_attrID == 'typ:attribute',
+	?_attrObject[?_attrAttributeId -> ?attr]@pre,
+	?_attrAttributeId == attribute(id),
+	?_attrObject[?_typeValOrProperty -> ?_finalObj]@pre,
+	?_typeValOrProperty \= 'typ:properties',  // no need to include properties.
+	?_finalObj[?_finalAttr -> ?value]@pre.		
+
+
+preReturnAllAttributesUnderPersonByEntity(?PersonID, ?ObjectType, ?valuesByObject) :-
+	?valuesByObject = setof{ ?_attrValue[ ?_objectName, ?_ID, ?_objectIdentifier]  |  
+	preReturnAllAttributesUnderPerson(?_ID, ?_objectName, ?_objectIdentifier, ?_attr, ?_value), ?_attrValue = ?_attr(?_value)},
+	?PersonID = ?_ID,
+	?ObjectType = ?_objectName.	
+
+// Compare
+
+
+compareAllPersonAttributesPreToPost(?PreValue, ?PersonID, ?publicName, ?attrType, ?attrValue) :-
+	?PreValue = 'Pre Values',
+	preReturnAllAttributesOnPerson(?PersonID, ?prePublicName, ?preAttrType, ?preAttrValue),
+	\if
+	(
+		postReturnAllAttributesOnPerson(?PersonID, ?prePublicName, ?preAttrType, ?preAttrValue)
+	)
+	\then
+	(
+		\false
+	)
+	\else
+	(	
+		\if
+		(
+			postReturnAllAttributesOnPerson(?PersonID, ?prePublicName, ?preAttrType, ?)
+		)
+		\then
+		(
+			?publicName = ?prePublicName,
+			?attrType = ?preAttrType,
+			?attrValue = ?preAttrValue
+		)
+		\else
+		(
+			\if
+			(
+				postReturnAllAttributesOnPerson(?PersonID, ?prePublicName, ?, ?)
+			)
+			\then
+			(
+				?publicName = ?prePublicName,
+				?attrType = ?preAttrType,
+				?attrValue = 'NA'
+			)
+			\else
+			(
+				\if
+				(
+					postReturnAllAttributesOnPerson(?PersonID, ?, ?, ?)
+				)
+				\then
+				(
+					?publicName = ?prePublicName,
+					?attrType = 'NA',
+					?attrValue = 'NA'
+				)
+				\else
+				(
+					?publicName = 'NA',
+					?attrType = 'NA',
+					?attrValue = 'NA'
+				)
+			)
+		)
+	).	
+
+	
+compareAllPersonAttributesPostToPre(?PostValue, ?PersonID, ?publicName, ?attrType, ?attrValue) :-
+	?PostValue = 'Post Values',
+	postReturnAllAttributesOnPerson(?PersonID, ?postPublicName, ?postAttrType, ?postAttrValue),
+	\if
+	(
+		preReturnAllAttributesOnPerson(?PersonID, ?postPublicName, ?postAttrType, ?postAttrValue)
+	)
+	\then
+	(
+		\false
+	)
+	\else
+	(	
+		\if
+		(
+			preReturnAllAttributesOnPerson(?PersonID, ?postPublicName, ?postAttrType, ?)
+		)
+		\then
+		(
+			?publicName = ?postPublicName,
+			?attrType = ?postAttrType,
+			?attrValue = ?postAttrValue
+		)
+		\else
+		(
+			\if
+			(
+				preReturnAllAttributesOnPerson(?PersonID, ?postPublicName, ?, ?)
+			)
+			\then
+			(
+				?publicName = ?postPublicName,
+				?attrType = ?postAttrType,
+				?attrValue = 'NA'
+			)
+			\else
+			(
+				\if
+				(
+					preReturnAllAttributesOnPerson(?PersonID, ?, ?, ?)
+				)
+				\then
+				(
+					?publicName = ?postPublicName,
+					?attrType = 'NA',
+					?attrValue = 'NA'
+				)
+				\else
+				(
+					?publicName = 'NA',
+					?attrType = 'NA',
+					?attrValue = 'NA'
+				)
+			)
+		)
+	).	
+
+
+
+comparePersonAttributesUnderPersonPreToPost(?preItteration, ?PersonID, ?ObjectType, ?valuesByObject) :-
+	?preItteration = 'Pre Values',
+	preReturnAllAttributesUnderPersonByEntity(?PersonID, ?preObjectType, ?preValuesByObject),
+		\if
+	(
+		postReturnAllAttributesUnderPersonByEntity(?PersonID, ?preObjectType, ?preValuesByObject)
+	)
+	\then
+	(
+		\false
+	)
+	\else
+	(	
+		\if
+		(
+			postReturnAllAttributesUnderPersonByEntity(?PersonID, ?preObjectType, ?)
+		)
+		\then
+		(
+			?ObjectType = ?preObjectType,
+			?valuesByObject = ?preValuesByObject
+		)
+		\else
+		(
+			\if
+			(
+				postReturnAllAttributesUnderPersonByEntity(?PersonID, ?, ?)
+			)
+			\then
+			(
+				?ObjectType = ?preObjectType,
+				?valuesByObject = 'NA'
+			)
+			\else
+			(
+				?ObjectType = 'NA',
+				?valuesByObject = 'NA'
+			)
+		)
+	).	
+	
+comparePersonAttributesUnderPersonPostToPre(?postItteration, ?PersonID, ?ObjectType, ?valuesByObject) :-
+	?postItteration = 'Post Values',
+	postReturnAllAttributesUnderPersonByEntity(?PersonID, ?preObjectType, ?preValuesByObject),
+	\if
+	(
+		preReturnAllAttributesUnderPersonByEntity(?PersonID, ?preObjectType, ?preValuesByObject)
+	)
+	\then
+	(
+		\false
+	)
+	\else
+	(	
+		\if
+		(
+			preReturnAllAttributesUnderPersonByEntity(?PersonID, ?preObjectType, ?)
+		)
+		\then
+		(
+			?ObjectType = ?preObjectType,
+			?valuesByObject = ?preValuesByObject
+		)
+		\else
+		(
+			\if
+			(
+				preReturnAllAttributesUnderPersonByEntity(?PersonID, ?, ?)
+			)
+			\then
+			(
+				?ObjectType = ?preObjectType,
+				?valuesByObject = 'NA'
+			)
+			\else
+			(
+				?ObjectType = 'NA',
+				?valuesByObject = 'NA'
+			)
+		)
+	).	
+	
+	
+	/*
+			?_valuesByObjectPost[length -> ?_postAttrCount]@\btp,
+			?_valuesByObjectPre[length -> ?_preAttrCount]@\btp,
+			?valuesByObjectPost == ?valuesByObjectPre,
+*/
+
+// to do , copy this for post to pre
+comparePersonAttributesUnderPersonSpecificValuesPostToPre(?itteration, ?PersonID, ?ObjectType, ?attrType, ?attrValue) :-
+	comparePersonAttributesUnderPersonPostToPre(?itteration, ?PersonID, ?ObjectType, ?_valuesByObjectPost),
+	(
+		\if
+		(
+			comparePersonAttributesUnderPersonPreToPost(?_itterationPost, ?PersonID, ?ObjectType, ?_valuesByObjectPre),
+			[?_type(?_val)] \subset ?_valuesByObjectPost
+		)
+		\then
+		(
+
+			\if
+			(
+				[?_type(?_preVal)] \subset ?_valuesByObjectPre
+			)
+			\then
+			(
+				\if
+				(
+					?_val == ?_preVal
+				)
+				\then
+				(
+					\false
+				)
+				\else
+				(
+					?attrType = ?_type,
+					?attrValue = ?_val
+				)
+			)
+			\else
+			(
+				?attrType = ?_type,
+				?attrValue = 'NA'
+			)
+		)
+		\else
+		(
+			?attrType = 'NA',
+			?attrValue = 'NA'
+		)
+	).
+
+comparePersonAttributesUnderPersonSpecificValuesPreToPost(?itteration, ?PersonID, ?ObjectType, ?attrType, ?attrValue) :-
+	comparePersonAttributesUnderPersonPreToPost(?itteration, ?PersonID, ?ObjectType, ?_valuesByObjectPre),
+	(
+		\if
+		(
+			comparePersonAttributesUnderPersonPostToPre(?_itterationPost, ?PersonID, ?ObjectType, ?_valuesByObjectPost),
+			[?_type(?_val)] \subset ?_valuesByObjectPre
+		)
+		\then
+		(
+
+			\if
+			(
+				[?_type(?_postVal)] \subset ?_valuesByObjectPost
+			)
+			\then
+			(
+				\if
+				(
+					?_val == ?_postVal
+				)
+				\then
+				(
+					\false
+				)
+				\else
+				(
+					?attrType = ?_type,
+					?attrValue = ?_val
+				)
+			)
+			\else
+			(
+				?attrType = ?_type,
+				?attrValue = 'NA'
+			)
+		)
+		\else
+		(
+			?attrType = 'NA',
+			?attrValue = 'NA'
+		)
+	).
+	
+	
+/*	
+	
+*/
+// End Person Rules

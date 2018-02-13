@@ -1,0 +1,84 @@
+// schema
+
+
+
+Event
+[|
+	name => \string,
+	startTime => \dateTime,
+	endTime => \dateTime
+|].
+
+Shift
+[|
+	startTime => \dateTime,
+	endTime => \dateTime
+
+|].
+
+Employee
+[|
+	unavailable => [Event],
+	preferences => Preference,
+	dailyMaxHours => \integer,
+	monthlyMaxHours => \integer,
+	weeklyMaxHours => \integer
+|].
+
+
+Preference
+[|
+	startTime => \dateTime,
+	endTime => \dateTime
+|].
+/* */
+//data
+
+
+
+//hourCounter('07jan2017', ).
+//counter{hours := 1}.
+
+
+
+/*
+
+	
+
+
+*/
+	
+//months(vars, {'Jan', 'Feb', 'FebLeap', 'March', 'April'}).
+
+
+
+
+	
+//?N : Hour[day -> ?D] :-
+//	cloneterm{ firstHour, ?N}, firstHour[day -> ?D].
+
+
+//, ?N[day -> ?D].
+
+//?X : firstHour :-
+//	?X:Hour[number -> 1].
+
+/*
+\while Day[totalHourNum -> ?N] \do writeln(?N)@\plg.
+//\do Day[totalHourNum -> ?N], writeln('test'=?N) \until \naf Day[totalHourNum -> ?N].
+
+
+
+cloneterm{?N, ?P}, P:Hour[day -> ?_D].
+*/
+
+//	number of days which are not holidays
+// ?N = count{?X | ?X :: Day, \naf ?_Y :: Event[ day -> ?X ]}.
+
+	
+	
+
+	
+	
+	
+	

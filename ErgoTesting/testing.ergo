@@ -1,0 +1,55 @@
+:- ergotext{ErgoText}.
+
+//Policy https://cloud.google.com/natural-language/
+//the person qualifies for California children's services if the person is under 21 years old.
+//qualifies(person(the), for(services(children(Caligornia))), is(?person(the), old(years(21(under))), if)).
+
+//the person qualifies for California children's services if the person has a medical condition that is covered by CCS.
+//qualifies(person(the), for(services(children(Caligornia))), has(?person(the), if, condition(medical, a), covered(is, that), by, CSS)).
+
+//qualifies(person(the), for(services(children(Caligornia))), ?X) 
+
+
+
+//Rules:
+qualifies(?person(the), for(services(children(Caligornia)))) :-
+	is(?person(the), old(years(21(under))), if),
+	has(?person(the), if, condition(medical, a), covered(is, that), by, CSS).
+
+
+
+
+//Test Data	
+Joey:person[date_of_birth-> "2001-11-23"^^\date].
+
+
+
+//qualifies(person(the), for(services(children(California, 's))))
+
+//the person is under 21 years old
+//is(person(the), old(years(21(under))))
+
+
+//qualifies(?person(the), for(services(children(California)))) :-
+//is(?person(the), old(years(21(under)))).
+
+
+
+//Definition Rules:
+person(?X) :- 
+	?X:person.
+
+//Supporting Rules:
+\(?person has a birth year of ?date\) :- 
+	?person[date_of_birth->?date].
+
+\(?person has an age of ?age\) :- 
+	birthYear(?person,?YoB),
+	\date[now->?now]@\basetype, 
+	?YoB^^\date[minus(?now^^\date)->?duration^^\duration]@\btp, 
+	?duration^^\duration[year->?age]@\basetype.
+
+\(?person is under 21 years old\) :- 
+	\(?person has an age of ?age\), 
+	?age < 21.
+	

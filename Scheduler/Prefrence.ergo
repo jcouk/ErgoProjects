@@ -1,0 +1,172 @@
+
+/*
+preferenceScore(?employee, ?shift, ?score) :-
+	\if preferenceMatchesShiftCompletely(?employee, ?shift)
+	\then ?score \is 100
+	\else preferencePartiallyMatchesPercent(?employee, ?shift, ?score).
+*/
+
+// 1 is the weight here.
+preferenceScore(?employee, ?shift, ?score) :-
+	?_count = count{ ?_date | preferenceMatchDates(?employee, ?shift, ?_date)},
+	?score \is ?_count * 1.
+
+shiftScore(?shift, ?score) :-
+	?shift :: Shift,
+	?shift[startTime -> ?_start],
+	?shift[endTime -> ?_end],
+	?_end[minus(?_start) -> ?_duration]@\btp,
+	durationScore(?_duration, ?score).
+
+//a rule that subtracts points for each date not filled.  probably make it weighted at 3? or something more than 2.	
+missingShiftScore(?allAssignedShifts, ?score) :-
+	?_allShifts = setof{ ?_shift | ?_shift :: Shift },
+	?_remainingShifts \is  ?_allShifts -- ?allAssignedShifts,
+	?_count = count{ ?_score | [?_shift] \subset ?_remainingShifts, shiftScore(?_shift, ?_score) },
+	?score \is ?_count * 3.
+	
+//a rule that rewards people working the same shift dateTime on a different day.  
+//assumes that the shifts are not actually durring the same year month or day.  Other rules should prevent that.
+
+consistentScheduleScore(?shiftOne, ?shiftTwo, ?score) :-
+		?shiftOne[startTime -> ?_objectStartTime],
+		?shiftOne[endTime -> ?_objectEndTime],
+		?shiftTwo[startTime -> ?_objectAStartTime],
+		?shiftTwo[endTime -> ?_objectAEndTime],
+		?_objectAStartTime[dateSign -> ?_dateSignA]@\basetype,
+		?_objectAStartTime[year -> ?_yearA]@\basetype,
+		?_objectAStartTime[month -> ?_monthA]@\basetype,
+		?_objectStartTime[day -> ?_dayA]@\basetype,
+		?_objectAStartTime[hour -> ?_hourA]@\basetype,
+		?_objectAStartTime[minute -> ?_minuteA]@\basetype,
+		?_objectAStartTime[second -> ?_secondA]@\basetype,
+		?_objectAStartTime[zoneSign -> ?_zoneSignA]@\basetype,
+		?_objectAStartTime[zoneHour -> ?_zoneHourA]@\basetype,
+		?_objectAStartTime[zoneSign -> ?_zoneSignA]@\basetype,
+		\dateTime[toType(?_dateSignA, ?_yearA, ?_monthA, ?_dayA, ?_hourA, ?_minuteA, ?_secondA, ?_zoneSignA, ?_zoneHourA, ?_zoneSignA) -> ?_modifiedStartTimeA]@\basetype,
+		?_objectAEndTime[minus(?_objectAStartTime) -> ?_shiftADuration]@\btp,
+		?_modifiedStartTimeA[add(?_shiftADuration) -> ?_modifiedEndTimeA]@\btp,
+		timeObjectOverLapMethod(?_objectStartTime, 
+								?_objectEndTime, 
+								?_modifiedStartTimeA, 
+								?_modifiedEndTimeA, 
+								?_duration),
+		durationScore(?_duration, ?_baseScore),
+		?score \is ?_baseScore * (1/3).
+
+//a way to reward a fair distribution of shifts
+%evenDistributionScore(?personShift, ?score) :-
+	?_averagePercentage = avg{ ?_percentage | 
+		[?_person(?_shifts)] \subset ?personShift, 
+		percentageAvailableVsAssigned(?_person, ?_shifts, ?_percentage) 
+	},
+	?_sumTotalVariance = sum{ ?_var | 
+		[?_person(?_shifts)] \subset ?personShift, 
+		percentageAvailableVsAssigned(?_person, ?_shifts, ?_percentage),
+		?_value \is ?_percentage - ?_averagePercentage,
+		?_var \is **(?_value, 2)
+	},
+	?_totalNumber = count{ ?_shifts | 
+		[?_person(?_shifts)] \subset ?personShift
+	},
+	?_denominator \is min(?_totalNumber, 1) - 1,
+	?_variance \is ?_sumTotalVariance / max(?_denominator,1),
+	?score \is 	(100 - ?_variance) * 2.
+	
+percentageAvailableVsAssigned(?employee, ?shifts, ?percentage) :-
+	employeeAvailableTime(?employee, ?_availableTime),
+	?_assignedTime = sum{ ?_score | [?_shift] \subset ?shifts, shiftScore(?_shift, ?_score)}, 
+	?percentage \is (?_assignedTime / ?_availableTime) * 100.
+
+//negative impact if a person is available for some shifts but not assigned any
+/* removing for performance testing
+noassignedShifts(?employee, ?shifts, ?score) :-
+	?shifts[length -> 0]@\btp,
+	?_numberOfAvailableShiftScores = sum{ ?_score | 
+		?_allShifts = setof{ ?_shift | 
+			shiftsAvailableForEmployee(?, ?employee, ?_shift)
+		},
+		[?_singleShift] \subset ?_allShifts,
+		shiftScore(?_singleShift, ?_score) },
+	?_totalShiftSimes = sum{ ?_score | shiftScore(?_shift, ?_score) },
+	?_percentageAvailable = ( ?_numberOfAvailableShiftScores / ?_totalShiftSimes ),
+	?score \is ?_percentageAvailable * 100.
+*/	
+/* To-Do Ideas	
+
+
+
+a different person on each weekend, (to do this we need to calculate more than 1 week.)
+
+
+
+*/
+
+	
+/*
+preferenceMatchesShiftCompletely(?employee, ?shift) :-
+	?_shiftTimes = setof{ ?_sTimes[?shift] | ?shift[timeObject -> ?_sTimes], ?shift :: Shift},
+	?_preferenceTimes = setof{ ?_pTimes[?employee] |?employee :: Employee, ?employee[preference -> ?_preference], ?_preference :: Preference, ?_preference[timeObject -> ?_pTimes] },
+	(
+	//	(
+		//	?_preferenceTimes \subset ?_shiftTimes
+		//);
+		(
+			?_shiftTimes \subset ?_preferenceTimes
+		)
+	
+	).	
+*/	
+
+
+preferenceMatchDates(?employee, ?shift, ?score) :-
+	?shift :: Shift,
+	?employee :: Employee,
+	?employee[preference -> ?_preference], 
+	?_preference :: Preference, 
+	?_preference[startTime -> ?_preferenceStartTime],
+	?_preference[endTime -> ?_preferenceEndTime],
+	?shift[startTime -> ?_shiftStartTime],
+	?shift[endTime -> ?_shiftEndTime],
+	(
+		(
+			?_preference[temporalContains -> ?shift],
+			?_shiftStartTime[minus(?_shiftEndTime) -> ?_duration]@\btp, 
+			durationScore(?_duration, ?score)
+		);
+		(
+			?shift[temporalContains -> ?_preference],
+			?_preferenceStartTime[minus(?_preferenceEndTime) -> ?_duration]@\btp, 
+			durationScore(?_duration, ?score)
+		);
+		(
+			?_preference[temporalTouches -> ?shift, temporalOverlap -> ?_duration],
+			durationScore(?_duration, ?score)
+		)
+		
+	).
+
+	
+durationScore(?duration, ?score) :-
+	?duration[minute -> ?_minutes]@\basetype,
+	?duration[hour -> ?_hour]@\basetype,
+	?duration[day -> ?_day]@\basetype,
+	?score \is ( ?_minutes + ( ?_hour * 60 ) + ( ( ?_day * 24 ) * 60)  )  / 15.
+	
+/*	
+preferencePartiallyMatchesPercent(?employee, ?shift, ?percent) :-
+	?_shiftSize = count{ ?_sDates[?shift] | ?_pshift[timeObject -> ?_sDates], ?shift :: Shift },
+	?_matchSize = count{ ?_mDates[?_oShift, ?employee] | preferencePartiallyMatchesDates(?employee, ?_oShift, ?_mDates)  },
+	?_oShift == ?shift,
+	?percent \is (?_matchSize / ?_shiftSize) * 100.
+*/
+/*
+preferencePartiallyMatchesShift(?employee, ?shift) :-
+	?_minShiftTime = min{ ?_sortedMinSTime[?shift] | ?shift[timeObject -> ?_minSTimes], ?shift :: Shift, ?_minSTimes[sortValue -> ?_sortedMinSTime] },
+	?_maxShiftTime = max{ ?_sortedMaxSTime[?shift] | ?shift[timeObject -> ?_maxSTimes], ?shift :: Shift, ?_maxSTimes[sortValue -> ?_sortedMaxSTime]},
+	?_minPreferenceTime = min{ ?_sortedMinPTime[?employee] | ?employee :: Employee, ?employee[preference -> ?_preference], ?_preference :: Preference, ?_preference[timeObject -> ?_minPTimes], ?_minPTimes[sortValue -> ?_sortedMinPTime] },
+	?_maxPreferenceTime = max{ ?_sortedMaxPTime[?employee] | ?employee :: Employee, ?employee[preference -> ?_preference], ?_preference :: Preference, ?_preference[timeObject -> ?_maxPTimes], ?_maxPTimes[sortValue -> ?_sortedMaxPTime] },
+	?_minShiftTime =< ?_maxPreferenceTimes,
+	?_maxShiftTime >= ?_minPreferenceTime.
+*/
+	

@@ -1,0 +1,44 @@
+
+
+
+
+first::X.
+second::X.
+third::X.
+
+
+
+one::Y[Val -> 1].
+two::Y[Val -> 2].
+three::Y[Val -> 3].
+four::Y[Val -> 4].
+
+//can't call itself.  runs forever.  Derrrrrrrrrrrrrrrrrrrrrrrrrr
+%exesWhy(?X,?Y) :-
+?X::X, ?Y::Y, 
+	\while
+		\naf %hasawhy(?X, ?Y)
+	\do
+		insert{stealth{%exesWhy(?X, ?Y)}}.
+		
+
+%hasawhy(?X, ?Y) :-
+	(
+		?Y :: Y,
+		%exesWhy(?_oX, ?Y),
+		\naf ?_oX :: ?X
+	);
+	(
+		%exesWhy(?X, ?_oY),
+		?_oY[Val -> ?Num],
+		?Num > 1
+	).
+/*
+%valueOfExe(?X , ?Val) :-
+		%exesWhy(?X, ?Y),
+		?Y[Val -> ?Val].
+*/	
+/*
+	?valY(?maxY) = max{?val(?maxY) | ?maxY::Y, ?maxY[val -> ?val]}, 
+	?valY(?Y),
+*/

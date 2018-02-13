@@ -1,0 +1,90 @@
+/*
+		Shift
+		[|
+			day => Day,
+			month => Month,
+			year => Year,
+			startTime => \dateTime,
+			endTime => \dateTime,
+			lengthHour => \integer
+
+		|].
+	\dateTime[toType(\integer,\integer,\integer,\integer,\integer,\integer,\decimal,
+	\integer,\integer,\integer) => \dateTime]
+	The meaning of the arguments is as follows (in that order): date sign (1 or -1), year, month,
+	day, hour, minute, second, zone sign (1 or -1), zone hour, zone minute.
+	
+	?_date^^\dateTime[year -> ?_Y]@\basetype, 
+	• \dateTime[|dateSign => \integer|]
+	• \dateTime[|year => \integer|]
+	• \dateTime[|month => \integer|]
+	• \dateTime[|day => \integer|]
+	• \dateTime[|hour => \integer|]
+	• \dateTime[|minute => \integer|]
+	• \dateTime[|second => \integer|]
+	• \dateTime[|zoneSign => \integer|]
+	• \dateTime[|zoneHour => \integer|]
+	• \dateTime[|zoneMinute => \integer|]
+	• \dateTime[|date => \date|]
+	• \dateTime[|time => \time|]	
+*/
+
+/*  Replacing with TimeObject for real
+?shift[timeObject -> ?year(?month(?day(?hour)))] :-
+		?shift :: Shift,
+		?shift[startTime -> ?_startTime],
+		?_startTime^^\dateTime[year -> ?_startYear, month -> ?_startMonth, day -> ?_startDay, hour -> ?_startHour]@\basetype,
+		?shift[endTime -> ?_endTime],
+		?_endTime^^\dateTime[year -> ?_endYear, month -> ?_endMonth, day -> ?_endDay, hour -> ?_endHour]@\basetype,
+		?hour :: Hour[day -> ?day],
+		?day[month -> ?month],
+		dayNum(?day, ?_dayNum),
+		?month[year -> ?year],
+		?month[monthNum -> ?_monthNumber],
+		?_startYear =< ?year,
+		?_startMonth =< ?_monthNumber,
+		?_startDay =< ?_dayNum,
+		?_startHour =< ?hour,
+		?_endYear >= ?year,
+		?_endMonth >= ?_monthNumber,
+		?_endDay >= ?_dayNum,
+		?_endHour >= ?hour.
+*/
+//?_shiftStartTime[minus(?_shiftEndTime) -> ?_duration]@\btp,
+shiftsCanBeAssignedTogehter(?firstShift, ?secondShift) :-
+	\naf shiftsAreOnTheSameDay(?firstShift, ?secondShift),
+	hoursBetweenShifts(?firstShift, ?secondShift, ?countHrs), 
+	?countHrs >= 10.
+
+shiftsAreOnTheSameDay(?firstShift, ?secondShift) :-
+	?firstShift :: Shift,
+	?secondShift :: Shift,
+	?firstShift \== ?secondShift,
+	?firstShift[startTime -> ?_firstStartTime],
+	?_firstStartTime[day -> ?_firstStartDay]@\basetype,
+	?firstShift[endTime -> ?_firstEndTime],
+	?_firstEndTime[day -> ?_firstEndDay]@\basetype,
+	?secondShift[startTime -> ?_secondStartTime],
+	?_secondStartTime[day -> ?_secondStartDay]@\basetype,
+	?secondShift[endTime -> ?_secondEndTime],
+	?_secondEndTime[day -> ?_secondEndDay]@\basetype,
+	( 
+		?_firstStartDay =:= ?_secondEndDay ;
+		?_secondEndDay =:= ?_firstEndDay ;
+		?_firstEndDay =:= ?_secondStartDay ;
+		?_firstStartDay =:= ?_secondStartDay 
+	).
+
+	//TODO!
+hoursBetweenShifts(?firstShift, ?secondShift, ?countHrs) :-
+	?firstShift \== ?secondShift,
+	?firstShift[startTime -> ?_firstStartTime],
+	?firstShift[endTime -> ?_firstEndTime],
+	?secondShift[startTime -> ?_secondStartTime],
+	?secondShift[endTime -> ?_secondEndTime],
+	timeObjecDistanceMethod(?_firstStartTime, ?_firstEndTime, ?_secondStartTime, ?_secondEndTime, ?_duration),
+	?_duration[hour -> ?_Hrs]@\basetype,
+	?_duration[day -> ?_day]@\basetype,
+	?countHrs \is (?_day * 24) + ?_Hrs.
+
+

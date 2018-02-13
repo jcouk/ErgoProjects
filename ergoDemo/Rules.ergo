@@ -1,0 +1,122 @@
+//text template declaration:
+#include "DataSchema.ergo"
+:- ergotext{calText}.
+
+
+//Rules:
+
+//Definition Rules:
+person(?X) :- 
+	?X:person.
+
+\(?person has a birth year of ?date\) :- 
+	?person[date_of_birth->?date].
+
+\(?person has an age of ?age\) :- 
+	birthYear(?person,?YoB),
+	\date[now->?now]@\basetype, 
+	?YoB^^\date[minus(?now^^\date) -> ?duration^^\duration]@\btp, 
+	?duration^^\duration[year -> ?age]@\basetype.
+
+\(?person is under 21\) :- 
+	\(?person has an age of ?age\), 
+	?age < 21.
+
+\(?person is a california resident\) :- 
+	?person[residency -> 'California'].
+
+\(?person has a medical condition\) :- 
+	?person[suspected_condition->?_condition].
+
+\(?insurance is of type MediCal\) :- 
+	?insurance[hasMediCal].
+
+\(?ins is of type Healthy Family\) :-
+	?ins[enrolledHealthyFam].
+	
+\(?ins does not include a Cost Share\) :- 
+	?ins[mediCalSOCAmount -> 0].
+
+\(?ins is of type MediCal with no Cost Share\) :-
+	\(?ins does not include a Cost Share\), 
+	\(?ins is of type MediCal\).
+
+\(?person has full scope MediCal insurance coverage\) :-
+	?person[health_ins -> ?ins],
+	\(?ins is of type MediCal with no Cost Share\).
+
+\(?person has Healthy Family insurance coverage\) :-
+	?person[health_ins -> ?ins],
+	\(?ins is of type Healthy Family\).
+
+\(?person requires Diagnostic medical aid\) :-
+	?person[needs_diagnostic_services -> 'true'].
+
+\(?person was adoted with a known medical condition\) :-
+	?person[adopted_with_known_condition -> 'true'].
+
+\(?person is applying through a medical therapy program\) :-
+	?person[applying_through_medtherprog -> 'true'].
+
+\(?person satisfies the Income Requirements\) :-
+	?person[income -> ?income],
+	(?income =< 40000;
+	(?person[expected_med_expense -> ?exp],
+	(?income/?exp) >= 21)).
+	
+//Master Rules:
+\(?person is potentially eligible\) :- 
+	//\(?person is under 21\) \and 
+	\(?person is a california resident\) \and
+	\(?person has a medical condition\).
+
+\(?person does not require an income test\) :- 
+	\(?person is potentially eligible\),
+	(
+		\(?person requires Diagnostic medical aid\);
+		\(?person was adoted with a known medical condition\);
+		\(?person is applying through a medical therapy program\);
+		\(?person has full scope MediCal insurance coverage\);
+		\(?person has Healthy Family insurance coverage\)
+	).
+	
+\(?person is eligible\) :-
+	\(?person is potentially eligible\),
+	(
+	\(?person does not require an income test\);
+	\(?person satisfies the Income Requirements\)
+	).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//old stuff:
+//meetsIncomeRequirements(?person) :-
+
+//sum examples:
+//totpersinc(?Y) :- sum{ ?Y | incomes(?person, ?income), amount(?income, ?Y), isCountableIncome(?income)}.
+//?totalAmount = sum{ ?Y | amount(?_X, ?Y), type(?_X, ?_T), ?_T = 'job income' }.
+
+//inBudgetGroup(?X, ?Y) :- meetsBudgetCriteria(?X, ?Y).
+//inBudgetGroup(?X, ?Z) :- meetsBudgetCriteria(?X, ?Y); inBudgetGroup(?Y, ?Z).
+
+//meetsBudgetCriteria(?X, ?Y): person(?X), and relation between ?X and ?Y indicates. 
+
+//isCountableIncome(?income) :- ?income[class->'Wages'; class->'Lump'].
+//isNotCountableIncome(?income) :- /naf isCountableIncome(?income).
+//income(?X) :- ?X:income.
+//totalPersonCountableIncome(?person,?totpersinc) :- ?totpersinc = sum{ ?amount | ?person[incomes->?income[amount->?amount]], isCountableIncome(?income)}.
+
