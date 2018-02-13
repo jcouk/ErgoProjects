@@ -3,7 +3,7 @@ This repo is for experimenting and learning Ergo.
 
 # Getting Started
 ## OS Support
-We are using Microsoft Windows 7
+We are using Microsoft Windows 10
 ## Ergo Installation
 
 ## Useful Documentation/Links
