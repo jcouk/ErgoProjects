@@ -14,7 +14,7 @@
 
 /* 	
 	Given the object Day, Month and Year, determine Day.
-	Query: dayOfWeekCalcObj(?X, '08', October, '2017').
+	Query: dayOfWeekCalcObj(?X, '08', October, 2017).
 */
 
 //Test Data

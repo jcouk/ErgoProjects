@@ -1,9 +1,11 @@
 /* 	
 	Given the object Day, Month and Year, determine Day.
-	Query: dayOfWeekCalcObj(?X, '08', October, '2017').
+	Query: dayOfWeekCalcObj(?X, '08', October, 2017).
 	
-]	for all values:
+	for all values:
 	dayOfWeekCalcObj(?dayOfWeek, ?dayNum, ?month, ?year)
+	
+	I have variables defined to limit the start and end date of time time frame we care about.  This will limit which dates you ask ask about.
 	
 	I was inspired to make these rules because of this podcast from reply all - https://www.gimletmedia.com/reply-all/104-case-phantom-caller
 	
