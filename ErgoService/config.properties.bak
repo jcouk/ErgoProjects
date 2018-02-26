@@ -1,0 +1,17 @@
+#### This is a sample config.properties file that needs to be placed in the same directory ####
+
+## The file directory where the FFM XML files to be processed are kept
+
+ergo.file.directory=C:\\Users\\kanwaryuvrajsingh\\workspace-copy\\ergo\\WebContent\\WEB-INF\\ergo
+
+#prolog.directory=C:\\Program Files\\Coherent\\ErgoSuite
+#flora.directory=C:\\Program Files\\Coherent\\ErgoSuite\\Ergo
+
+prolog.directory=C:\\Users\\kanwaryuvrajsingh\\Flora-2\\XSB\\config\\x64-pc-windows\\bin
+flora.directory=C:\\Users\\kanwaryuvrajsingh\\Flora-2\\flora2
+
+diff.xml.files.directory=C:\\Users\\kanwaryuvrajsingh\\Downloads\\UploadedFiles
+
+##Set the log level - off,severe,warning,info
+
+log.level=info

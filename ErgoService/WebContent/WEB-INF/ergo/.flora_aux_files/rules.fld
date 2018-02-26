@@ -1,0 +1,12 @@
+#include "flrheader.flh"
+#include "flr_fld_standardtypes.flh"
+
+FLORA_THIS_WORKSPACE(mvd)(__fldnewvar1,baseAmount,__fldnewvar2,__fldnewvar3).
+FLORA_THIS_WORKSPACE(mvd)(__fldnewvar1,medicaidIncomeLimit,__fldnewvar2,__fldnewvar3).
+FLORA_THIS_WORKSPACE(mvd)(__fldnewvar1,snapIncomeLimit,__fldnewvar2,__fldnewvar3).
+FLORA_THIS_WORKSPACE(mvd)(__fldnewvar1,tanfIncomeLimit,__fldnewvar2,__fldnewvar3).
+FLORA_THIS_WORKSPACE(meth)(__fldnewvar1,householdBenefitsAssessed,__fldnewvar2).
+FLORA_THIS_WORKSPACE(meth)(__fldnewvar1,householdIsPotentiallyMedicaidEligible,__fldnewvar2).
+FLORA_THIS_WORKSPACE(meth)(__fldnewvar1,householdIsPotentiallySnapEligible,__fldnewvar2).
+FLORA_THIS_WORKSPACE(meth)(__fldnewvar1,householdIsPotentiallyTanfEligible,__fldnewvar2).
+FLORA_THIS_WORKSPACE(meth)(__fldnewvar1,incomeLimitsCalculated,__fldnewvar2).

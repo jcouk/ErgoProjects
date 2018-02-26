@@ -1,0 +1,82 @@
+//the person’s monthly income limits for benefits have been calculated
+//:- ergotext{rulesErgoText}.
+
+
+?person[incomeLimitsCalculated] :-
+	?person[tanfIncomeLimit -> ?x],
+	?person[snapIncomeLimit -> ?y],
+	?person[medicaidIncomeLimit -> ?z].
+	
+?person[tanfIncomeLimit -> ?value] :-
+	TANF[baseAmount -> ?baseAmount], 
+	?person[householdSize -> ?size], 
+	?value \is (?baseAmount*?size).
+
+
+?person[snapIncomeLimit -> ?value] :-
+	SNAP[baseAmount -> ?baseAmount], 
+	?person[householdSize -> ?size], 
+	?value \is (?baseAmount*?size).
+
+
+	
+?person[medicaidIncomeLimit -> ?value] :-
+	Medicaid[baseAmount -> ?baseAmount], 
+	?person[householdSize -> ?size], 
+	?value \is (?baseAmount*?size).	
+
+
+?person[householdIsPotentiallyTanfEligible] :-
+	?person[totalGrossIncome -> ?income],
+	?person[tanfIncomeLimit -> ?amt],
+	(?income < ?amt).
+
+
+\neg ?person[householdIsPotentiallyTanfEligible] :-
+	?person[totalGrossIncome -> ?income],
+	?person[tanfIncomeLimit -> ?amt],
+	(?amt =< ?income).
+	
+?person[householdIsPotentiallySnapEligible] :-
+	?person[totalGrossIncome -> ?income],
+	?person[snapIncomeLimit -> ?amt],
+	(?income < ?amt).
+
+
+	
+\neg ?person[householdIsPotentiallySnapEligible] :-
+	?person[totalGrossIncome -> ?income],
+	?person[snapIncomeLimit -> ?amt],
+	(?amt =< ?income).
+	
+?person[householdIsPotentiallyMedicaidEligible] :-
+	?person[householdMemberOlderThan65] ;
+	( ?person[totalGrossIncome -> ?income],
+	?person[medicaidIncomeLimit -> ?amt],
+	(?income < ?amt) ).
+	
+\neg ?person[householdIsPotentiallyMedicaidEligible] :-
+	\naf ?person[householdMemberOlderThan65],
+	?person[totalGrossIncome -> ?income],
+	?person[snapIncomeLimit -> ?amt],
+	(?amt =< ?income).
+
+?person[householdBenefitsAssessed] :-
+	(?person[householdIsPotentiallyTanfEligible] ; 
+	 \neg ?person[householdIsPotentiallyTanfEligible] ), 
+	(?person[householdIsPotentiallySnapEligible] ; 
+	 \neg ?person[householdIsPotentiallySnapEligible] ), 
+	(?person[householdIsPotentiallyMedicaidEligible] ; 
+	 \neg ?person[householdIsPotentiallyMedicaidEligible] ).
+	
+	
+//Values
+TANF[baseAmount -> 1000].
+SNAP[baseAmount -> 1500].
+Medicaid[baseAmount -> 2000].
+
+//test data
+	//totalGrossIncome(Joey, 200).
+	//householdMemberOlderThan65(Joey).
+	//householdSize(Joey, 1).
+

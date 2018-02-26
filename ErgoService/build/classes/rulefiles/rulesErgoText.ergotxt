@@ -1,0 +1,15 @@
+
+template(headbody,\(Income limits have been calculated for ?person\), incomeLimitsCalculated(?person)).
+template(headbody,\(The TANF income limit for ?person is ?value\), tanfIncomeLimit(?person, ?value)).
+template(headbody,\(The SNAP income limit for ?person is ?value\), snapIncomeLimit(?person, ?value)).
+template(headbody,\(The Medicaid income limit for ?person is ?value\), medicaidIncomeLimit(?person, ?value)).
+
+
+template(headbody,\(The household for ?person is potentially eligible for TANF\), householdIsPotentiallyTanfEligible(?person)).
+template(headbody,\(The household for ?person is not potentially eligible for TANF\), \neg householdIsPotentiallyTanfEligible(?person)).
+
+template(headbody,\(The household for ?person is potentially eligible for SNAP\), householdIsPotentiallySnapEligible(?person)).
+template(headbody,\(The household for ?person is not potentially eligible for SNAP\), \neg householdIsPotentiallySnapEligible(?person)).
+
+template(headbody,\(The household for ?person is potentially eligible for Medicaid\), householdIsPotentiallyMedicaidEligible(?person)).
+template(headbody,\(The household for ?person is not potentially eligible for Medicaid\), \neg householdIsPotentiallyMedicaidEligible(?person)).

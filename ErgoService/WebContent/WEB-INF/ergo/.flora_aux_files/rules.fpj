@@ -1,0 +1,5 @@
+%% #include info for source file: C:/Users/kanwaryuvrajsingh/workspace-copy/ergo/WebContent/WEB-INF/ergo/rules.flr
+
+
+:-(multifile(/('_$_$_flora''include_prj_info',2))).
+'_$_$_flora''include_prj_info'('C:/Users/kanwaryuvrajsingh/workspace-copy/ergo/WebContent/WEB-INF/ergo/rules.flr','(runtime)').

@@ -1,0 +1,347 @@
+//'testthinpost.xml'[load_xml(post) -> ?W]@\xml.
+//'testthinpre.xml'[load_xml(pre) -> ?W]@\xml.
+
+	
+//CombineCompare	
+/*	*/	
+compare(?iteration, ?instance, ?entityType, ?publicName, ?attrValue, ?itterationOne, ?itterationTwo ) :-
+	compareGlobal(?iteration, ?instance, ?entityType, ?publicName, ?attrValue, ?itterationOne, ?itterationTwo );
+	compareAllPersonAttributes(?iteration, ?instance, ?entityType, ?publicName, ?attrValue, ?itterationOne, ?itterationTwo);
+	comparePersonAttributesUnderPersonSpecificValues(?iteration, ?instance, ?entityType, ?publicName, ?attrValue, ?itterationOne, ?itterationTwo).
+
+//working query: compareGlobal(?iteration, ?globalInstance, ?publicName, ?attrType, ?attrValue, pre, post )
+compareGlobal(?iteration, ?globalInstance, ?entityType, ?publicName, ?attrValue, ?itterationOne, ?itterationTwo ) :-
+	compareGlobalOneAgainstTwo(?iteration, ?globalInstance, ?entityType, ?publicName, ?attrValue, ?itterationOne, ?itterationTwo );
+	compareGlobalOneAgainstTwo(?iteration, ?globalInstance, ?entityType, ?publicName, ?attrValue, ?itterationTwo, ?itterationOne ).
+
+compareAllPersonAttributes(?iteration, ?PersonID, ?entityType, ?publicName, ?attrValue, ?itterationOne, ?itterationTwo) :-
+	compareAllPersonAttributesOneAgainstTwo(?iteration, ?PersonID, ?entityType, ?publicName, ?attrValue, ?itterationOne, ?itterationTwo);
+	compareAllPersonAttributesOneAgainstTwo(?iteration, ?PersonID, ?entityType, ?publicName, ?attrValue, ?itterationTwo, ?itterationOne).
+ 
+
+comparePersonAttributesUnderPersonSpecificValues(?itteration, ?PersonID, ?ObjectType, ?attrType, ?attrValue, ?itterationOne, ?itterationTwo) :-
+	comparePersonAttributesUnderPersonSpecificValuesOneAgainstTwo(?itteration, ?PersonID, ?ObjectType, ?attrType, ?attrValue, ?itterationOne, ?itterationTwo) ;
+	comparePersonAttributesUnderPersonSpecificValuesOneAgainstTwo(?itteration, ?PersonID, ?ObjectType, ?attrType, ?attrValue, ?itterationTwo, ?itterationOne). 
+		
+/*	*/
+// Global Rules	
+	
+returnObjectPublicName( ?parentObject, ?publicName, ?itteration) :-
+	?parentObject[?_attrID -> ?publicName]@?itteration,
+	?_attrID == attribute(id).
+
+//returnGlobalAttributes(?globalInstance, ?_firstPublicName, ?_firstAttrType, ?_firstAttrValue, ?itterationTwo)	
+returnGlobalAttributes( ?attrVarFour, ?publicName, ?attrValueOrObjectSeven, ?itteration) :- 
+	?_obj[?_attr -> ?_attrValueOrObjectOne]@?itteration,
+	?_attr == medicaidRulebaseOutputVariable,
+	?_attrValueOrObjectOne[?_attrVarTwo -> ?_attrValueOrObjectTwo]@?itteration,
+	?_attrValueOrObjectTwo[?_attrVarThree -> ?_attrValueOrObjectThree]@?itteration,
+	?_attrValueOrObjectThree[?attrVarFour -> ?_attrValueOrObjectFour]@?itteration,
+	?_attrValueOrObjectFour[?_attrVarFive -> ?_attrValueOrObjectFive]@?itteration,
+	?_attrVarFive == 'typ:attribute',
+	?_attrValueOrObjectFive[?_attrVarSix -> ?_attrValueOrObjectSix]@?itteration,
+	?_attrValueOrObjectSix[?_attrVarSeven -> ?attrValueOrObjectSeven]@?itteration,
+	?_attrVarSeven \= 'typ:property',
+	returnObjectPublicName(?_attrValueOrObjectFive, ?publicName, ?itteration).
+	
+	/*  temp
+	returnGlobalAttributes( ?attrVarFour, ?publicName, ?attrVarSix, ?attrValueOrObjectSeven, ?itteration) :- 
+	?_obj[?_attr -> ?_attrValueOrObjectOne]@?itteration,
+	?_attr == medicaidRulebaseOutputVariable,
+	?_attrValueOrObjectOne[?_attrVarTwo -> ?_attrValueOrObjectTwo]@?itteration,
+	?_attrValueOrObjectTwo[?_attrVarThree -> ?_attrValueOrObjectThree]@?itteration,
+	?_attrValueOrObjectThree[?attrVarFour -> ?_attrValueOrObjectFour]@?itteration,
+	?_attrValueOrObjectFour[?_attrVarFive -> ?_attrValueOrObjectFive]@?itteration,
+	?_attrVarFive == 'typ:attribute',
+	?_attrValueOrObjectFive[?attrVarSix -> ?_attrValueOrObjectSix]@?itteration,
+	?_attrValueOrObjectSix[?_attrVarSeven -> ?attrValueOrObjectSeven]@?itteration,
+	?_attrVarSeven \= 'typ:property',
+	returnObjectPublicName(?_attrValueOrObjectFive, ?publicName, ?itteration).
+	*/
+	
+//compareGlobal(?iteration, ?globalInstance, ?publicName, ?attrType, ?attrValue, ?itterationOne, ?itterationTwo )
+compareGlobalOneAgainstTwo(?iteration, ?globalInstance, ?entityType, ?publicName, ?attrValue, ?itterationOne, ?itterationTwo ) :-
+	?iteration = ?itterationOne,
+	?entityType = 'global',
+	returnGlobalAttributes(?globalInstance, ?_firstPublicName, ?_firstAttrValue, ?itterationOne),
+	\if
+	(
+		returnGlobalAttributes(?globalInstance, ?_firstPublicName, ?_firstAttrValue, ?itterationTwo)
+	)
+	\then
+	(
+		\false
+	)
+	\else
+	(	
+		\if
+		(
+			returnGlobalAttributes(?globalInstance, ?_firstPublicName, ?, ?itterationTwo)
+		)
+		\then
+		(
+			?publicName = ?_firstPublicName,
+			?attrValue = ?_firstAttrValue
+		)
+		\else
+		(
+			\if
+			(
+				returnGlobalAttributes( ?globalInstance, ?_firstPublicName, ?, ?itterationTwo)
+			)
+			\then
+			(
+				?publicName = ?_firstPublicName,
+				?attrValue = 'NA'
+			)
+			\else
+			(
+				\if
+				(
+					returnGlobalAttributes(?globalInstance, ?, ?, ?itterationTwo)
+				)
+				\then
+				(
+					?publicName = ?_firstPublicName,
+					?attrValue = 'NA'
+				)
+				\else
+				(
+					?publicName = 'NA',
+					?attrValue = 'NA'
+				)
+			)
+		)
+	).
+
+// End Global Rules	
+
+
+
+// Person Rules
+
+returnAllAttributesUnderPerson(?ID, ?objectName, ?objectID, ?attr, ?value, ?itteration)	:-
+	returnListOfPersonObjectsAndIdentifier(?_person, ?ID, ?itteration),
+	descend(?_person, ?_childObjects, ?itteration),
+	returnAllAttributeValues(?_childObjects, ?objectName, ?attr, ?value, ?itteration),
+	returnAllObjectIdentifiers(?_childObjects, ?_type, ?objectID, ?itteration).
+
+//attrValueOrObjectTwo	
+returnAllAttributesOnPerson(?ID, ?publicName, ?attrValueOrObjectFive, ?itteration) :- 
+	returnListOfPersonObjectsAndIdentifier(?_personObj, ?ID, ?itteration), 
+	?_personObj[?_attrVarThree -> ?_attrValueOrObjectThree]@?itteration,
+	?_attrVarThree == 'typ:attribute',
+	?_attrValueOrObjectThree[?_attrVarFour -> ?_attrValueOrObjectFour]@?itteration, 
+	?_attrVarFour \=	'typ:properties',
+	?_attrVarFour \=	'typ:change-point',
+	?_attrValueOrObjectFour[?_attrVarFive -> ?attrValueOrObjectFive]@?itteration, 
+	returnObjectPublicName(?_attrValueOrObjectThree, ?publicName, ?itteration).	
+
+	
+child(?X, ?Y, ?itteration) :-	
+	?X[?_attr -> ?Y]@?itteration .
+	
+	// obj981
+descend(?X, ?Y, ?itteration) :-
+	child( ?X, ?Y, ?itteration).
+	
+descend(?X, ?Y, ?itteration) :-
+	child(?X, ?Z, ?itteration), child( ?Z, ?Y, ?itteration).	
+	
+returnListOfPersonObjectsAndIdentifier(?person, ?ID, ?itteration) :-
+	returnPersonParentObject(?_obj, ?itteration),
+	?_object[?_attrID -> ?_attrValueOrObject]@?itteration,
+	?_attrValueOrObject[?_twoAttrID -> ?_obj]@?itteration, 
+	?_obj[?_threeAttrID -> ?person]@?itteration,
+	?_threeAttrID == 'typ:instance',    	
+	returnAllObjectIdentifiers(?person, ?_type, ?ID, ?itteration).
+
+returnPersonParentObject(?obj, ?itteration) :-
+	?_object[?_attrID -> ?_attrValueOrObject]@?itteration,
+	?_attrValueOrObject[?_twoAttrID -> ?obj]@?itteration, 
+	?obj[?_threeAttrID -> ?_threeAttrValueOrObject]@?itteration, 
+	?_threeAttrValueOrObject == person.
+
+returnAllObjectIdentifiers(?Obj, ?type, ?ID, ?itteration) :-
+	returnAllInstanceObjects(?Obj, ?type, ?itteration),
+	?Obj[?_attrID -> ?ID]@?itteration,
+	?_attrID = attribute(id).	
+
+returnAllInstanceObjects(?object, ?type, ?itteration) :-
+	returnAllObjectsExcludingGlobal(?_obj, ?type, ?itteration),
+	?_obj[?_attrID -> ?object]@?itteration,
+	?_attrID = 'typ:instance'.
+	
+returnAllObjectsExcludingGlobal(?obj, ?type, ?itteration) :- 	
+	?_object[?_attrID -> ?_attrValueOrObject]@?itteration,
+	?_attrValueOrObject[?_twoAttrID -> ?obj]@?itteration, 
+	?obj[?_threeAttrID -> ?type]@?itteration,	
+	?_twoAttrID == 'typ:entity',
+	?_threeAttrID == attribute(id).	
+
+returnAllAttributeValues(?Obj, ?objectName, ?attr, ?value, ?itteration ) :-
+	returnAllObjectIdentifiers(?Obj, ?objectName, ?_ID, ?itteration),
+	?Obj[?_attrID -> ?_attrObject]@?itteration,
+	?_attrID == 'typ:attribute',
+	?_attrObject[?_attrAttributeId -> ?attr]@?itteration,
+	?_attrAttributeId == attribute(id),
+	?_attrObject[?_typeValOrProperty -> ?_finalObj]@?itteration,
+	?_typeValOrProperty \= 'typ:properties',  // no need to include properties.
+	?_finalObj[?_finalAttr -> ?value]@?itteration.	
+
+returnAllAttributesUnderPersonByEntity(?PersonID, ?ObjectType, ?valuesByObject, ?itteration) :-
+	?valuesByObject = setof{?attrValue[ ?objectName, ?ID, ?_objectIdentifier]  |  returnAllAttributesUnderPerson(?ID, ?objectName, ?_objectIdentifier, ?attr, ?value, ?itteration), ?attrValue = ?attr(?value)},
+	?PersonID = ?ID,
+	?ObjectType = ?objectName.	
+	
+
+// Compare
+
+
+compareAllPersonAttributesOneAgainstTwo(?itteration, ?PersonID, ?entityType, ?publicName, ?attrValue, ?itterationOne, ?itterationTwo) :-
+	?itteration = ?itterationOne,
+	?entityType = 'person',
+	returnAllAttributesOnPerson(?PersonID, ?_onePublicName, ?_oneAttrValue, ?itterationOne),
+	\if
+	(
+		returnAllAttributesOnPerson(?PersonID, ?_onePublicName, ?_oneAttrValue, ?itterationTwo)
+	)
+	\then
+	(
+		\false
+	)
+	\else
+	(	
+		\if
+		(
+			returnAllAttributesOnPerson(?PersonID, ?_onePublicName, ?, ?itterationTwo)
+		)
+		\then
+		(
+			?publicName = ?_onePublicName,
+			?attrValue = ?_oneAttrValue
+		)
+		\else
+		(
+			\if
+			(
+				postReturnAllAttributesOnPerson(?PersonID, ?_onePublicName, ?, ?itterationTwo)
+			)
+			\then
+			(
+				?publicName = ?_onePublicName,
+				?attrValue = 'NA'
+			)
+			\else
+			(
+				\if
+				(
+					postReturnAllAttributesOnPerson(?PersonID, ?, ?, ?itterationTwo)
+				)
+				\then
+				(
+					?publicName = ?_onePublicName,
+					?attrValue = 'NA'
+				)
+				\else
+				(
+					?publicName = 'NA',
+					?attrValue = 'NA'
+				)
+			)
+		)
+	).	
+
+
+comparePersonAttributesUnderPersonOneAgainstTwo(?itteration, ?PersonID, ?ObjectType, ?valuesByObject, ?itterationOne, ?itterationTwo) :-
+	?itteration = ?itterationOne,
+	returnAllAttributesUnderPersonByEntity(?PersonID, ?_oneObjectType, ?_oneValuesByObject, ?itterationOne),
+	\if
+	(
+		returnAllAttributesUnderPersonByEntity(?PersonID, ?_oneObjectType, ?_oneValuesByObject, ?itterationTwo)
+	)
+	\then
+	(
+		\false
+	)
+	\else
+	(	
+		\if
+		(
+			returnAllAttributesUnderPersonByEntity(?PersonID, ?_oneObjectType, ?, ?itterationTwo)
+		)
+		\then
+		(
+			?ObjectType = ?_oneObjectType,
+			?valuesByObject = ?_oneValuesByObject
+		)
+		\else
+		(
+			\if
+			(
+				returnAllAttributesUnderPersonByEntity(?PersonID, ?, ?, ?itterationTwo)
+			)
+			\then
+			(
+				?ObjectType = ?_oneObjectType,
+				?valuesByObject = 'NA'
+			)
+			\else
+			(
+				?ObjectType = 'NA',
+				?valuesByObject = 'NA'
+			)
+		)
+	).	
+	
+
+// comparePersonAttributesUnderPersonSpecificValues(?iteration, ?instance,  ?entityType, ?publicName, ?attrValue, ?itterationOne, ?itterationTwo)
+comparePersonAttributesUnderPersonSpecificValuesOneAgainstTwo(?itteration, ?PersonID, ?ObjectType, ?attrType, ?attrValue, ?itterationOne, ?itterationTwo) :-
+	comparePersonAttributesUnderPersonOneAgainstTwo(?itteration, ?PersonID, ?ObjectType, ?_valuesByObjectOne, ?itterationOne, ?itterationTwo),
+	(
+		\if
+		(
+			comparePersonAttributesUnderPersonOneAgainstTwo(?_itterationPost, ?PersonID, ?ObjectType, ?_valuesByObjectTwo, ?itterationTwo, ?itterationOne ),
+			[?_type(?_val)] \subset ?_valuesByObjectTwo
+		)
+		\then
+		(
+
+			\if
+			(
+				[?_type(?_preVal)] \subset ?_valuesByObjectOne
+			)
+			\then
+			(
+				\if
+				(
+					?_val == ?_preVal
+				)
+				\then
+				(
+					\false
+				)
+				\else
+				(
+					?attrType = ?_type,
+					?attrValue = ?_val
+				)
+			)
+			\else
+			(
+				?attrType = ?_type,
+				?attrValue = 'NA'
+			)
+		)
+		\else
+		(
+			?attrType = 'NA',
+			?attrValue = 'NA'
+		)
+	).
+
+	/*
+	asdfasdfadf
+	
+*/
+// End Person Rules

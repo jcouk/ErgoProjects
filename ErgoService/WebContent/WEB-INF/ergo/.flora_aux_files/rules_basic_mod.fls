@@ -1,0 +1,15 @@
+flora_symbol(incomeLimitsCalculated,0,\@,18,6,function_symbol,nontransactional_symbol,'rules.flr').
+flora_symbol(householdSize,0,\@,75,13,function_symbol,nontransactional_symbol,'rules.flr').
+flora_symbol(medicaidIncomeLimit,0,\@,45,9,function_symbol,nontransactional_symbol,'rules.flr').
+flora_symbol(householdIsPotentiallyTanfEligible,0,\@,177,30,function_symbol,nontransactional_symbol,'rules.flr').
+flora_symbol(tanfIncomeLimit,0,\@,25,7,function_symbol,nontransactional_symbol,'rules.flr').
+flora_symbol(householdMemberOlderThan65,0,\@,328,54,function_symbol,nontransactional_symbol,'rules.flr').
+flora_symbol(snapIncomeLimit,0,\@,35,8,function_symbol,nontransactional_symbol,'rules.flr').
+flora_symbol(householdIsPotentiallySnapEligible,0,\@,249,41,function_symbol,nontransactional_symbol,'rules.flr').
+flora_symbol('SNAP',0,\@,104,18,function_symbol,nontransactional_symbol,'rules.flr').
+flora_symbol(householdIsPotentiallyMedicaidEligible,0,\@,321,53,function_symbol,nontransactional_symbol,'rules.flr').
+flora_symbol('Medicaid',0,\@,145,25,function_symbol,nontransactional_symbol,'rules.flr').
+flora_symbol(totalGrossIncome,0,\@,184,31,function_symbol,nontransactional_symbol,'rules.flr').
+flora_symbol(householdBenefitsAssessed,0,\@,412,65,function_symbol,nontransactional_symbol,'rules.flr').
+flora_symbol('TANF',0,\@,63,12,function_symbol,nontransactional_symbol,'rules.flr').
+flora_symbol(baseAmount,0,\@,65,12,function_symbol,nontransactional_symbol,'rules.flr').

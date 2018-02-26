@@ -1,0 +1,94 @@
+/*
+   THIS FILE IS IN THE PUBLIC DOMAIN.
+
+   IT IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+   OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+   ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+   OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+/*
+**  Methods for writing out the contents of a predicate (or, in fact, of
+**  the results of any query).
+*/
+
+// Predicate p/1. Could have defined it via arbitrary rules,
+// and then the below methods would be writing out the results of that query.
+p(a).
+p(b).
+p(c).
+
+/*
+    Several methods for writing out the results of a query p(...)
+*/
+
+// Method 1: just do it via a one-of query.
+//           This is the SIMPLEST method, but is somewhat limited.
+//           Problem: will also show all the bindings (a,b,c) for ?X.
+//                    To avoid that, use a fail-loop idiom, as in Methods 3, 4.
+?- writeln('Write out the contents of p(...) - Method 1')@\io,
+        p(?X),
+        writeln(= 'p(' || ?X || ')')@\io.
+
+// Method 2: define the printout operation as a non-transactional predicate
+//       and use it later. Not a great method, overall, as it will
+//       print p(...) out only once.
+//       But if writing just once is what's needed then it is the right method.
+writeout2 :-
+        writeln('Write out the contents of p(...) - Method 2')@\io,
+        p(?X),
+        writeln(= 'p(' || ?X || ')')@\io.
+?- writeout2.
+?- writeout2.  // does nothing: writeout2 is tabled & just says Yes the 2nd time
+
+// Method 3: define the printout operation as a transactional predicate and use
+//       it later. Requires a fail-loop idiom to print out all answers.
+//       Fail loop is required here but not in case of non-transactional
+//       predicates in Method 2 because tabled predicates are attempted to be
+//       evaluated in all possible ways, while transactional in only one way.
+//       So, Method 2 relies on the knowledge of the evaluation strategy, and
+//       this is another reason why it is not recommended.
+%writeout3 :-
+        writeln('Write out the contents of p(...) - Method 3')@\io,
+        p(?X),
+        writeln(= 'p(' || ?X || ')')@\io,
+        \false.
+%writeout3 :- \true.
+
+?- %writeout3.
+
+// Method 4: define the printout operation as a latent query.
+//       Similar to Method 3 - a bit more complicated.
+//       Since latent queries must be written in one statement
+@!{writeout4} !-
+        (writeln('Write out the contents of p(...) - Method 4')@\io,
+          p(?X),
+          writeln(= 'p(' || ?X || ')')@\io,
+          \false
+         \or
+          \true
+        ).
+
+?- query{writeout4}.
+
+// Methods 3alt and 4alt: simpler if one does not mind that bindings for ?X
+//                        will be printed in the end.
+//                        Note: the variable ?X is added in the rule hear
+//                        (%writeout3) and in the latent query Id (writeout4).
+
+%writeout3alt(?X) :-
+        writeln('Write out the contents of p(...) - Method 3alt')@\io,
+        p(?X),
+        writeln(= 'p(' || ?X || ')')@\io.
+
+?- %writeout3alt(?X).
+
+@!{writeout4alt(?X)} !-
+        writeln('Write out the contents of p(...) - Method 4alt')@\io,
+        p(?X),
+        writeln(= 'p(' || ?X || ')')@\io.
+
+?- query{writeout4alt(?X)}.
