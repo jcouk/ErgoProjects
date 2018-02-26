@@ -73,7 +73,7 @@ cloneterm{?N, ?P}, P:Hour[day -> ?_D].
 */
 
 //	number of days which are not holidays
-// ?N = count{?X | ?X :: Day, \naf ?_Y :: Event[ day -> ?X ]}.
+// ?N = count{?X | ?X : Day, \naf ?_Y : Event[ day -> ?X ]}.
 
 	
 	

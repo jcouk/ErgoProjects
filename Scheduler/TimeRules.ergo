@@ -1,17 +1,13 @@
 ?object : TimeObject :-
-	?object[startTime -> ?_start],
-	?object[endTime -> ?_end],
-	\dateTime[isTypeOf(?_start)]@\basetype,
-	\dateTime[isTypeOf(?_end)]@\basetype,
+	?object[startTime -> ?_start:\dateTime],
+	?object[endTime -> ?_end:\dateTime],
 	?_start[lessThan(?_end)]@\basetype.
 
 	
-?object[temporalContains -> ?objectA] :-
-	?objectA : TimeObject,
-	?object : TimeObject,
-	?object !== ?objectA,
+?object^^TimeObject[temporalContains -> ?objectA^^TimeObject] :-
 	?object[startTime -> ?_objectStartTime],
 	?objectA[startTime -> ?_objectAStartTime],
+	?object !== ?objectA,
 	(	
 		?_objectStartTime[lessThan(?_objectAStartTime)]@\basetype ;
 		?_objectStartTime[equals(?_objectAStartTime)]@\basetype
@@ -23,12 +19,10 @@
 		?_objectAEndTime[equals(?_objectEndTime)]@\basetype
 	).
 	
-?object[temporalTouches -> ?objectA, temporalOverlap -> ?duration] :-
-	?objectA : TimeObject,
-	?object : TimeObject,
-	?object !== ?objectA,
+?object^^TimeObject[temporalTouches -> ?objectA^^TimeObject, temporalOverlap -> ?duration] :-
 	?object[startTime -> ?_objectStartTime],
 	?objectA[startTime -> ?_objectAStartTime],
+	?object !== ?objectA,
 	?object[endTime -> ?_objectEndTime],
 	?objectA[endTime -> ?_objectAEndTime],
 	timeObjectOverLapMethod(?_objectStartTime, ?_objectEndTime, ?_objectAStartTime, ?_objectAEndTime, ?duration).

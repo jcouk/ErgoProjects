@@ -1,59 +1,52 @@
 :- use_argumentation_theory.
 
-hasNoUnavailable(?employee) :-
-	?employee :: Employee,
+hasNoUnavailable(?employee^^Employee) :-
 	\if (countOfHolidaysByEmployee(?employee, ?_number) )
 	\then (\false)
 	\else (\true).
 	
-countOfHolidaysByEmployee(?emp, ?number) :-
-	?_events = setof{?_event[?_employee] | ?_employee[unavailable -> ?_events], ?_events[ith(?_X) -> ?_event]@\btp },
-	?_employee :: Employee,
-	?emp \is ?_employee,
+countOfHolidaysByEmployee(?emp^^Employee, ?number) :-
+	?_events = setof{?_event[?emp] | ?emp[unavailable -> ?_events], ?_event \in ?_events },
 	?_events[length -> ?number]@\btp.
 			
 
-hasNoShifts(?employee) :-
-	?employee :: Employee,
+hasNoShifts(?employee^^Employee) :-
 	\if (countOfshifsByEmployee(?employee, ?_number) )
-	\then (\false)
-	\else (\true).
+	\then \false
+	\else \true.
 		
 		
-countOfshifsByEmployee(?emp, ?number) :-
-	?number= count{?_shift[?emp] | 
-		?emp[shifts -> ?_shift], 
-		?emp :: Employee 
-	}.
+countOfshifsByEmployee(?emp^^Employee, ?number) :-
+	?number= count{?_shift[?emp] | ?emp[shifts -> ?_shift] }.
 			
 		
-shiftsAvailableForEmployee(?score, ?employee, ?shift) :-
+shiftsAvailableForEmployee(?score, ?employee^^Employee, ?shift^^Shift) :-
 	?_allPossibleShifts = setof{ ?_shift[?employee] | 
-			?employee[temporalContains -> ?_shift],
-			?_shift :: Shift
+			?employee[temporalContains -> ?_shift]
 		},
 	employeeExcludedShifts(?employee, ?_excludedShifts),
 	?_finalShifts \is ?_allPossibleShifts -- ?_excludedShifts,
-	?_finalShifts[ith(?_X) -> ?shift]@\btp,
+	//?_finalShifts[ith(?_X) -> ?shift]@\btp,
+        ?shift \in ?_finalShifts,
 	shiftScore(?shift, ?score).
 	//shiftScore(?shift, ?score).
 
 // requires an employee
 employeeExcludedShifts(?employee, ?shifts) :-
-	?employee :: Employee,
+	?employee : Employee,
 	?shifts = setof{ ?_eShift | 
 				employeeEvents(?employee, ?_event),
 				eventsForShifts(?_event, ?_eShift)
 			}.
 	
 employeeEvents(?employee, ?event) :-
+	?employee : Employee,
 	?employee[unavailable -> ?_events],
-	?_events[ith(?_N) -> ?event]@\btp.
+	//?_events[ith(?_N) -> ?event]@\btp.
+        ?event \in ?_events.
 	
 	
-eventsForShifts(?event, ?shift) :-
-	?event :: Event,
-	?shift :: Shift,
+eventsForShifts(?event^^Event, ?shift^^Shift) :-
 	(
 		?event[temporalContains -> ?shift] ;
 		?shift[temporalContains -> ?event] ;
@@ -66,10 +59,10 @@ eventsForShifts(?event, ?shift) :-
 
 	/*
 	
-	?_employeeTimes = setof{ ?_eTimes | ?employee[timeObject -> ?_eTimes]}, ?_unAvailTime = setof{ ?_uTimes | ?employee[unavailable -> ?_event], ?_event :: Event, ?_event[timeObject -> ?_uTimes] }, ?_unAvailTime \subset ?_employeeTimes.
+	?_employeeTimes = setof{ ?_eTimes | ?employee[timeObject -> ?_eTimes]}, ?_unAvailTime = setof{ ?_uTimes | ?employee[unavailable -> ?_event], ?_event : Event, ?_event[timeObject -> ?_uTimes] }, ?_unAvailTime \subset ?_employeeTimes.
 	
 	,
-	setof{ ?time | ?employee :: Employee, ?employee[timeObject -> ?time] }.
+	setof{ ?time | ?employee : Employee, ?employee[timeObject -> ?time] }.
 	(
 		(
 			hasNoUnavailable(?employee)
@@ -77,7 +70,7 @@ eventsForShifts(?event, ?shift) :-
 		(
 			\naf hasNoUnavailable(?employee),
 			?employee[unavailable -> ?_event],
-			?_event :: Event,
+			?_event : Event,
 			?_event[timeObject -> ?_year(?_month(?_day(?_hour(?))))]
 			//,
 			//?_year(?_month(?_day(?_hour(?)))) !== ?_oYear(?_oMonth(?_oDay(?_oHour(?))))
@@ -85,41 +78,35 @@ eventsForShifts(?event, ?shift) :-
 	).
 
 	*/
-employeeAvailableTime(?employee, ?totalScore) :-
-	\if ( ?_totScore \is sum{ ?_score[?employee] | ?employee :: Employee, shiftsAvailableForEmployee(?_score, ?employee, ?)} )
-	\then ?totalScore \is ?_totScore
-	\else ?totalScore \is 0.
+employeeAvailableTime(?employee^^Employee, ?totalScore) :-
+	\if ( ?_totScore \is sum{ ?_score[?employee] | shiftsAvailableForEmployee(?_score, ?employee, ?)} )
+	\then ?totalScore = ?_totScore
+	\else ?totalScore = 0.
 	
-allShiftsSet(?shift, ?employees) :-
+allShiftsSet(?shift^^Shift, ?employees) :-
 	?employees = setof{ ?_employee[?shift] | shiftsAvailableForEmployee(?_score, ?_employee, ?shift) }.
 	
-allNoPreferenceShiftsSet(?shift, ?employees) :-
+allNoPreferenceShiftsSet(?shift^^Shift, ?employees) :-
 	?employees = setof{ ?_employee[?shift] | shiftsAvailableForEmployee(?_score, ?_employee, ?shift), \naf preferenceScore(?, ?shift, ?) }.	
 
 	
-allPreferenceShiftsSet(?shift, ?employees) :-
-	?employees = setof{ ?_employee[?_oShift] | MaxScoreByEmployeeAndShift(?_oShift, ?_employee, ?)},
-	?_oShift :: Shift,	
-	?shift \is ?_oShift.		
+allPreferenceShiftsSet(?shift^^Shift, ?employees) :-
+	?employees = setof{ ?_employee[?shift] | MaxScoreByEmployeeAndShift(?shift, ?_employee, ?)}.
 	
-MaxScoreByEmployeeAndShift(?shift, ?employee, ?score) :-
-	?score = max{ ?_score[?_employee, ?_oShift] | shiftsAvailableForEmployee(?, ?_employee, ?_oShift), preferenceScore(?_employee, ?_oShift, ?_score) },
-	?_oShift :: Shift,	
-	?employee \is ?_employee,
-	?shift \is ?_oShift.	
+MaxScoreByEmployeeAndShift(?shift^^Shift, ?employee^^Employee, ?score) :-
+	?score = max{ ?_score[?employee, ?shift] | shiftsAvailableForEmployee(?, ?employee, ?shift), preferenceScore(?employee, ?shift, ?_score) }.
 		
 	
-employeeOnlyAvailableShiftHours(?employee, ?totalScore) :-
-	?employee :: Employee,
-	\if (?_testTotalScore \is count{ ?_score[?_emp] | shiftsAvailableForEmployee(?_score, ?_emp, ?_shift), allShiftsSet(?_shift, ?_employees), ?_employees[length -> 1]@\btp}, ?_emp :: Employee, ?employee == ?_emp)
-	\then (?totalScore \is ?_testTotalScore )
-	\else (?totalScore \is 0 ).
+employeeOnlyAvailableShiftHours(?employee^^Employee, ?totalScore) :-
+	\if (?_testTotalScore = count{ ?_score[?employee] | shiftsAvailableForEmployee(?_score, ?employee, ?_shift), allShiftsSet(?_shift, ?_employees), ?_employees[length -> 1]@\btp})
+	\then (?totalScore = ?_testTotalScore )
+	\else (?totalScore = 0 ).
 
 	
 // when using this rule we expect shift and employees to be provided.
 /*
 %pickARandomWinner(?winnerEmp, ?shift, ?employees) :-
-		?shift :: Shift,
+		?shift : Shift,
 		%lowestAssignedEmp(?employees, ?_oEmployee),
 		?winnerEmp \is ?_oEmployee,
 		insert{stealth{%winners(?winnerEmp, ?shift, ?employees)}}.
@@ -130,7 +117,7 @@ employeeOnlyAvailableShiftHours(?employee, ?totalScore) :-
 	?_percentage \is min{ ?_percentage | %employeePercentageOfAssigned(?, ?_percentage)},
 	?_empsWithLowestPercentage = setof{ ?_lowestEmp | %employeePercentageOfAssigned(?_lowestEmp, ?_percentage)},
 	pickFirst(?_empsWithLowestPercentage, ?_firstLowestEmp),
-	?_firstLowestEmp :: Employee,
+	?_firstLowestEmp : Employee,
 	?lowestEmployees[member(?_firstLowestEmp)]@\btp,
 	?lowestEmployee \is ?_firstLowestEmp.
 
@@ -143,7 +130,7 @@ pickFirst(?list, ?firstItem) :-
 /*
 %employeePercentageOfAssigned(?employee, ?percentage) :-
 	(
-		?employee :: Employee,
+		?employee : Employee,
 		employeeAvailableHours(?employee, ?_totalAvailableHours),
 		(
 			?_totalAvailableHours == 0,
@@ -160,12 +147,12 @@ pickFirst(?list, ?firstItem) :-
 
 %assignedShiftsForEmployee(?date, ?employee, ?shift) :-
 	%winners(?employee, ?shift, ?_employees),
-	?shift :: Shift,
+	?shift : Shift,
 	?shift[timeObject -> ?date].	
 	
 %assignedWinnerHours(?employee, ?totalHours) :-
-	?employee :: Employee,
-	\if (?_totHours \is count{ ?_date[?_emp] | %assignedShiftsForEmployee(?_date, ?_emp, ?)}, ?_emp :: Employee,?employee == ?_emp)
+	?employee : Employee,
+	\if (?_totHours \is count{ ?_date[?_emp] | %assignedShiftsForEmployee(?_date, ?_emp, ?)}, ?_emp : Employee,?employee == ?_emp)
 	\then (?totalHours \is ?_totHours)
 	\else (?totalHours \is 0).
 */	
@@ -249,29 +236,31 @@ fullListOfPossibleAssignments(?employee, ?compatibleShifts) :-
 */
 
 	//returns all possible lists  FIX THIS
-%shiftAssignmentItteration(?employee, ?shift, ?compShifts, ?remainingList, ?finalList) :-	
+%shiftAssignmentItteration(?employee^^Employee, ?shift^^Shift, ?compShifts, ?remainingList, ?finalList) :-	
 	compatibleShifts(?employee, ?shift, ?_oCompShifts),
 	?_totalShifts \is ?_oCompShifts && ?remainingList,
 	(
 		(
 			?_totalShifts[length -> ?_size]@\btp, 
 			?_size >= 1,
-			?_totalShifts[ith(?_X) -> ?_independentShift]@\btp,
-			?_finalListNeedsSorting \is [?shift] ++ [?_independentShift] ++ ?compShifts,
+			//?_totalShifts[ith(?_X) -> ?_independentShift]@\btp,
+                  ?_independentShift \in ?_totalShifts,
+			?_finalListNeedsSorting = [?shift,?_independentShift|?compShifts],
 			?_finalListNeedsSorting[sort -> ?finalList]@\btp
 		
 		);
 		(
 			?_totalShifts[length -> ?_size]@\btp, 
 			?_size == 0,
-			?_finalListNeedsSorting \is [?shift] ++ ?compShifts,
+			?_finalListNeedsSorting = [?shift|?compShifts],
 			?_finalListNeedsSorting[sort -> ?finalList]@\btp	
 		);
 		(
 			?_totalShifts[length -> ?_size]@\btp, 
 			?_size >= 2,
-			?_totalShifts[ith(?_C) -> ?_firtCompShift]@\btp, 
-			?_currShifts \is [?shift] ++ ?compShifts,
+			//?_totalShifts[ith(?_C) -> ?_firtCompShift]@\btp, 
+                  ?_firtCompShift \in ?_totalShifts,
+			?_currShifts = [?shift|?compShifts],
 			// sorting here to remove duplicates
 			?_currShifts[sort -> ?_sortedCurrShifts]@\btp,
 			%shiftAssignmentItteration(?employee, ?_firtCompShift, ?_sortedCurrShifts, ?_totalShifts, ?finalList)
@@ -336,9 +325,9 @@ fullListOfPossibleAssignments(?employee, ?compatibleShifts) :-
 	
 	*/
 
-compatibleShifts(?employee, ?shift, ?compatablieShifts) :-
+compatibleShifts(?employee^^Employee, ?shift^^Shift, ?compatablieShifts) :-
 	(
-		?_compatablieShiftsUnosrted = setof{ ?_shift[?employee, ?shift] | 	?_shift :: Shift, 
+		?_compatablieShiftsUnosrted = setof{ ?_shift[?employee, ?shift] |
 																shiftsAvailableForEmployee(?, ?employee, ?_shift), 
 																shiftsCanBeAssignedTogehter(?_shift, ?shift),
 																shiftsAvailableForEmployee(?, ?employee, ?shift)
@@ -362,14 +351,14 @@ compatibleShifts(?employee, ?shift, ?compatablieShifts) :-
 //\overrides(multipleCompatible,singleCompatible).	
 
 allShiftsToPerson(?person, ?shiftsLists) :-
-	?_shiftsListsUnsortedExceptSignles = setof{ ?_shifts[?person] | ?_remainingList = setof{?_shift | ?_shift :: Shift},  
-	?_X \is [],
+	?_shiftsListsUnsortedExceptSignles = setof{ ?_shifts[?person] | ?_remainingList = setof{?_shift | ?_shift : Shift},  
+	//?_X \is [], THIS MUST BE A BUG: used as arg in ith(...)
 	%shiftAssignmentItteration(?person, ?_shift, ?_X, ?_remainingList, ?_shifts) },
 	?_allShiftsAsAListOfLists = setof{ ?_multiple | 
 		?_allSingleShifts = setof{ ?_shift | 
 				shiftsAvailableForEmployee(?, ?person, ?_shift) 
 				}, 
-		?_allSingleShifts[ith(?_X) -> ?_single]@\btp, 
+		?_allSingleShifts[ith(?_X) -> ?_single]@\btp, // Same ?_X???
 		?_multiple = [?_single] 
 	},
 	?_shiftsListsUnsorted \is ?_shiftsListsUnsortedExceptSignles ++ ?_allShiftsAsAListOfLists,
@@ -377,14 +366,14 @@ allShiftsToPerson(?person, ?shiftsLists) :-
 
 	
 singleShiftToPerson(?person, ?shifts) :-
-	?_remainingList = setof{?_shift | ?_shift :: Shift},  
-	?_X \is [],
+	?_remainingList = setof{?_shift | ?_shift : Shift},  
+	?_X = [], // SUSPICIONS. BUG?
 	%shiftAssignmentItteration(?person, ?_shift, ?_X, ?_remainingList, ?shifts).
 
 personToShiftCombo(?personShift) :-
 	(
 		allShiftsToPerson(?_person, ?_shiftsLists),
-		[?_shift] \subset ?_shiftsLists,
+		?_shift \in ?_shiftsLists,
 		?personShift = ?_person(?_shift)
 	).
 	/* removing for now
@@ -418,13 +407,14 @@ personToShiftCombo(?personShift) :-
 		);
 		(
 			?_currlistSize < ?_numPeople,
-			?_currentPers = setof{ ?_currPersons | [?_currPersons(?_currShifts)] \subset ?tempList },
-			?_currentShifts = setof{ ?_currShifts | [?_currPersons(?_currShifts)] \subset ?tempList },
-			?_singleListShifts = setof{ ?_sShift | [?_currSingleShifts] \subset ?_currentShifts, [?_sShift] \subset ?_currSingleShifts }, 
+			?_currentPers = setof{ ?_currPersons | ?_currPersons(?_currShifts) \in ?tempList },
+			?_currentShifts = setof{ ?_currShifts | ?_currPersons(?_currShifts) \in ?tempList },
+			?_singleListShifts = setof{ ?_sShift | ?_currSingleShifts \in ?_currentShifts, ?_sShift \in ?_currSingleShifts }, 
 			?_remainIngPers \is ?_allPeople -- ?_currentPers,
-			?_remainIngPers[ith(?_N) -> ?_nextPers]@\btp,
+			//?_remainIngPers[ith(?_N) -> ?_nextPers]@\btp,
+                  ?_nextPers \in ?_remainIngPers,
 			// attempting to optimize
-			//[?_nextPers] \subset ?_remainIngPers,
+			//?_nextPers \in ?_remainIngPers,
 			personToShiftCombo(?_nextPers(?_shifts)),
 			?_singleListShifts[sort -> ?_singleListShiftsSorted]@\btp,
 			//doesNotConitainDuplicateShift(?_singleListShiftsSorted, ?_shiftsSorted),
@@ -489,29 +479,29 @@ identifyScore(?scoreShift) :-
 %eachPersonShiftComboScore(?personShift, ?score)	 :-
 	
 	?_preferenceCount = sum {  ?_score | 
-		[?_person(?_shifts)] \subset ?personShift, 
-		[?_shift] \subset ?_shifts, 
+		?_person(?_shifts) \in ?personShift, 
+		?_shift \in ?_shifts, 
 		preferenceScore(?_person, ?_shift, ?_score)
 	},
 	?_assignedCount = sum {  ?_score | 
-		[?(?_shifts)] \subset ?personShift, 
-		[?_shift] \subset ?_shifts, 
+		?(?_shifts) \in ?personShift, 
+		?_shift \in ?_shifts, 
 		shiftScore(?_shift, ?_score)
 	},
 	?_missingCount = sum {  ?_score | 		
 		?_currentShifts = setof { ?_currShifts | 
-			[?(?_currShifts)] \subset ?personShift 
+			?(?_currShifts) \in ?personShift 
 		},
 		?_singleListShifts = setof{ ?_sShift | 
-			[?_currSingleShifts] \subset ?_currentShifts, 
-			[?_sShift] \subset ?_currSingleShifts 
+			?_currSingleShifts \in ?_currentShifts, 
+			?_sShift \in ?_currSingleShifts 
 		}, 
 		missingShiftScore(?_singleListShifts, ?_score)
 	},
 	?_consistentSchedule = sum {  ?_score | 
-		[?_person(?_shifts)] \subset ?personShift,
-		[?_shiftOne] \subset ?_shifts,
-		[?_shiftTwo] \subset ?_shifts,
+		?_person(?_shifts) \in ?personShift,
+		?_shiftOne \in ?_shifts,
+		?_shiftTwo \in ?_shifts,
 		consistentScheduleScore(?_shiftOne, ?_shiftTwo, ?_score)
 	},
 	?_evenDistributionScore = sum {  ?_score |
@@ -541,7 +531,7 @@ singleListPersonShiftCombo(?personAllShifts) :-
  
  /*
 noEasyWayToDoThis(?person(?shifts), ?runningList, ?person, ?shifts) :-
-	?_oPerson :: Employee,
+	?_oPerson : Employee,
 	allShiftsToPerson(?_person, ?_shifts),
 	?_shift \subset ?_shifts,
 */	
@@ -558,8 +548,9 @@ doesNotConitainDuplicateShift(?currentShifts, ?newShifts) :-
 			?_N == 0
 		);
 		(
-			?_numberOfMatchesCurrToNew = count{ ?_S | [?_S] \subset ?currentShifts, [?_S] \subset ?newShifts},
-			?_numberOfMatchesCurrToNew == 0
+                  ?_numberOfMatchesCurrToNew =
+                     count{ ?_S | ?_S \in ?currentShifts, ?_S \in ?newShifts},
+                  ?_numberOfMatchesCurrToNew == 0
 		).
 
 /*
@@ -660,7 +651,7 @@ ElemenateShift(?originalShifts, ?shifts, ?X, ?Y) :-
 /*TO-DO make this work
 
 ?employee[shiftCombo -> ?shifts[]] :-
-	?employee :: Employee, 
+	?employee : Employee, 
 	shiftsAvailableForEmployee(?, ?employee, ?_shift),
 	?shifts[length -> 0]@\btp,
 	?shifts[append -> ?_shift].
@@ -676,13 +667,13 @@ ElemenateShift(?originalShifts, ?shifts, ?X, ?Y) :-
 	
 assignment(?shift, ?oEmployee) :-
 	?employee = max{?_employees | allShiftsSet(?shift, ?_employees)},
-	?oEmployee :: Employee, 
+	?oEmployee : Employee, 
 	?oEmployee =:= ?employee.
 	
 		
 AssignShifts(?shift),
-	?_employee :: Employee, 
-	?shift :: Shift, 
+	?_employee : Employee, 
+	?shift : Shift, 
 	\while
 		%canBeAssigned(?_employee, ?shift)
 	\do
@@ -691,7 +682,7 @@ AssignShifts(?shift),
 		
 %canBeAssigned(?employee, ?shift) :-		
 	(
-		?shift :: Shift,
+		?shift : Shift,
 		\naf %shifts(?_oEmployee, ?shift),
 		shiftsAvailableForEmployee(?_hour, ?_day, ?employee, ?shift),
 	).

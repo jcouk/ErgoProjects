@@ -31,12 +31,12 @@
 
 /*  Replacing with TimeObject for real
 ?shift[timeObject -> ?year(?month(?day(?hour)))] :-
-		?shift :: Shift,
+		?shift : Shift,
 		?shift[startTime -> ?_startTime],
 		?_startTime^^\dateTime[year -> ?_startYear, month -> ?_startMonth, day -> ?_startDay, hour -> ?_startHour]@\basetype,
 		?shift[endTime -> ?_endTime],
 		?_endTime^^\dateTime[year -> ?_endYear, month -> ?_endMonth, day -> ?_endDay, hour -> ?_endHour]@\basetype,
-		?hour :: Hour[day -> ?day],
+		?hour : Hour[day -> ?day],
 		?day[month -> ?month],
 		dayNum(?day, ?_dayNum),
 		?month[year -> ?year],
@@ -52,19 +52,17 @@
 */
 //?_shiftStartTime[minus(?_shiftEndTime) -> ?_duration]@\btp,
 shiftsCanBeAssignedTogehter(?firstShift, ?secondShift) :-
-	\naf shiftsAreOnTheSameDay(?firstShift, ?secondShift),
 	hoursBetweenShifts(?firstShift, ?secondShift, ?countHrs), 
+	\naf shiftsAreOnTheSameDay(?firstShift, ?secondShift),
 	?countHrs >= 10.
 
-shiftsAreOnTheSameDay(?firstShift, ?secondShift) :-
-	?firstShift :: Shift,
-	?secondShift :: Shift,
-	?firstShift \== ?secondShift,
+shiftsAreOnTheSameDay(?firstShift^^Shift, ?secondShift^^Shift) :-
 	?firstShift[startTime -> ?_firstStartTime],
 	?_firstStartTime[day -> ?_firstStartDay]@\basetype,
 	?firstShift[endTime -> ?_firstEndTime],
 	?_firstEndTime[day -> ?_firstEndDay]@\basetype,
 	?secondShift[startTime -> ?_secondStartTime],
+	?firstShift \== ?secondShift,
 	?_secondStartTime[day -> ?_secondStartDay]@\basetype,
 	?secondShift[endTime -> ?_secondEndTime],
 	?_secondEndTime[day -> ?_secondEndDay]@\basetype,
@@ -76,12 +74,12 @@ shiftsAreOnTheSameDay(?firstShift, ?secondShift) :-
 	).
 
 	//TODO!
-hoursBetweenShifts(?firstShift, ?secondShift, ?countHrs) :-
-	?firstShift \== ?secondShift,
+hoursBetweenShifts(?firstShift^^Shift, ?secondShift^^Shift, ?countHrs) :-
 	?firstShift[startTime -> ?_firstStartTime],
 	?firstShift[endTime -> ?_firstEndTime],
 	?secondShift[startTime -> ?_secondStartTime],
 	?secondShift[endTime -> ?_secondEndTime],
+	?firstShift \== ?secondShift,
 	timeObjecDistanceMethod(?_firstStartTime, ?_firstEndTime, ?_secondStartTime, ?_secondEndTime, ?_duration),
 	?_duration[hour -> ?_Hrs]@\basetype,
 	?_duration[day -> ?_day]@\basetype,

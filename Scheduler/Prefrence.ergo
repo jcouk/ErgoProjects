@@ -11,8 +11,7 @@ preferenceScore(?employee, ?shift, ?score) :-
 	?_count = count{ ?_date | preferenceMatchDates(?employee, ?shift, ?_date)},
 	?score \is ?_count * 1.
 
-shiftScore(?shift, ?score) :-
-	?shift :: Shift,
+shiftScore(?shift^^Shift, ?score) :-
 	?shift[startTime -> ?_start],
 	?shift[endTime -> ?_end],
 	?_end[minus(?_start) -> ?_duration]@\btp,
@@ -20,9 +19,9 @@ shiftScore(?shift, ?score) :-
 
 //a rule that subtracts points for each date not filled.  probably make it weighted at 3? or something more than 2.	
 missingShiftScore(?allAssignedShifts, ?score) :-
-	?_allShifts = setof{ ?_shift | ?_shift :: Shift },
+	?_allShifts = setof{ ?_shift | ?_shift : Shift },
 	?_remainingShifts \is  ?_allShifts -- ?allAssignedShifts,
-	?_count = count{ ?_score | [?_shift] \subset ?_remainingShifts, shiftScore(?_shift, ?_score) },
+	?_count = count{ ?_score | ?_shift \in ?_remainingShifts, shiftScore(?_shift, ?_score) },
 	?score \is ?_count * 3.
 	
 //a rule that rewards people working the same shift dateTime on a different day.  
@@ -57,25 +56,25 @@ consistentScheduleScore(?shiftOne, ?shiftTwo, ?score) :-
 //a way to reward a fair distribution of shifts
 %evenDistributionScore(?personShift, ?score) :-
 	?_averagePercentage = avg{ ?_percentage | 
-		[?_person(?_shifts)] \subset ?personShift, 
+		?_person(?_shifts) \in ?personShift, 
 		percentageAvailableVsAssigned(?_person, ?_shifts, ?_percentage) 
 	},
 	?_sumTotalVariance = sum{ ?_var | 
-		[?_person(?_shifts)] \subset ?personShift, 
+		?_person(?_shifts) \in ?personShift, 
 		percentageAvailableVsAssigned(?_person, ?_shifts, ?_percentage),
 		?_value \is ?_percentage - ?_averagePercentage,
 		?_var \is **(?_value, 2)
 	},
 	?_totalNumber = count{ ?_shifts | 
-		[?_person(?_shifts)] \subset ?personShift
+		?_person(?_shifts) \in ?personShift
 	},
 	?_denominator \is min(?_totalNumber, 1) - 1,
 	?_variance \is ?_sumTotalVariance / max(?_denominator,1),
 	?score \is 	(100 - ?_variance) * 2.
 	
-percentageAvailableVsAssigned(?employee, ?shifts, ?percentage) :-
+percentageAvailableVsAssigned(?employee^^Employee, ?shifts, ?percentage) :-
 	employeeAvailableTime(?employee, ?_availableTime),
-	?_assignedTime = sum{ ?_score | [?_shift] \subset ?shifts, shiftScore(?_shift, ?_score)}, 
+	?_assignedTime = sum{ ?_score | ?_shift \in ?shifts, shiftScore(?_shift, ?_score)}, 
 	?percentage \is (?_assignedTime / ?_availableTime) * 100.
 
 //negative impact if a person is available for some shifts but not assigned any
@@ -105,8 +104,8 @@ a different person on each weekend, (to do this we need to calculate more than 1
 	
 /*
 preferenceMatchesShiftCompletely(?employee, ?shift) :-
-	?_shiftTimes = setof{ ?_sTimes[?shift] | ?shift[timeObject -> ?_sTimes], ?shift :: Shift},
-	?_preferenceTimes = setof{ ?_pTimes[?employee] |?employee :: Employee, ?employee[preference -> ?_preference], ?_preference :: Preference, ?_preference[timeObject -> ?_pTimes] },
+	?_shiftTimes = setof{ ?_sTimes[?shift] | ?shift[timeObject -> ?_sTimes], ?shift : Shift},
+	?_preferenceTimes = setof{ ?_pTimes[?employee] |?employee : Employee, ?employee[preference -> ?_preference], ?_preference : Preference, ?_preference[timeObject -> ?_pTimes] },
 	(
 	//	(
 		//	?_preferenceTimes \subset ?_shiftTimes
@@ -119,31 +118,27 @@ preferenceMatchesShiftCompletely(?employee, ?shift) :-
 */	
 
 
-preferenceMatchDates(?employee, ?shift, ?score) :-
-	?shift :: Shift,
-	?employee :: Employee,
+preferenceMatchDates(?employee^^Employee, ?shift^^Shift, ?score) :-
 	?employee[preference -> ?_preference], 
-	?_preference :: Preference, 
-	?_preference[startTime -> ?_preferenceStartTime],
+	?_preference^^Preference[startTime -> ?_preferenceStartTime],
 	?_preference[endTime -> ?_preferenceEndTime],
 	?shift[startTime -> ?_shiftStartTime],
 	?shift[endTime -> ?_shiftEndTime],
 	(
-		(
-			?_preference[temporalContains -> ?shift],
-			?_shiftStartTime[minus(?_shiftEndTime) -> ?_duration]@\btp, 
-			durationScore(?_duration, ?score)
-		);
-		(
-			?shift[temporalContains -> ?_preference],
-			?_preferenceStartTime[minus(?_preferenceEndTime) -> ?_duration]@\btp, 
-			durationScore(?_duration, ?score)
-		);
-		(
-			?_preference[temporalTouches -> ?shift, temporalOverlap -> ?_duration],
-			durationScore(?_duration, ?score)
-		)
-		
+          (
+            ?_preference[temporalContains -> ?shift],
+            ?_shiftStartTime[minus(?_shiftEndTime) -> ?_duration]@\btp, 
+            durationScore(?_duration, ?score)
+          );
+          (
+            ?shift[temporalContains -> ?_preference],
+            ?_preferenceStartTime[minus(?_preferenceEndTime) -> ?_duration]@\btp, 
+            durationScore(?_duration, ?score)
+          );
+          (
+            ?_preference[temporalTouches -> ?shift, temporalOverlap -> ?_duration],
+            durationScore(?_duration, ?score)
+          )
 	).
 
 	
@@ -155,17 +150,17 @@ durationScore(?duration, ?score) :-
 	
 /*	
 preferencePartiallyMatchesPercent(?employee, ?shift, ?percent) :-
-	?_shiftSize = count{ ?_sDates[?shift] | ?_pshift[timeObject -> ?_sDates], ?shift :: Shift },
+	?_shiftSize = count{ ?_sDates[?shift] | ?_pshift[timeObject -> ?_sDates], ?shift : Shift },
 	?_matchSize = count{ ?_mDates[?_oShift, ?employee] | preferencePartiallyMatchesDates(?employee, ?_oShift, ?_mDates)  },
 	?_oShift == ?shift,
 	?percent \is (?_matchSize / ?_shiftSize) * 100.
 */
 /*
 preferencePartiallyMatchesShift(?employee, ?shift) :-
-	?_minShiftTime = min{ ?_sortedMinSTime[?shift] | ?shift[timeObject -> ?_minSTimes], ?shift :: Shift, ?_minSTimes[sortValue -> ?_sortedMinSTime] },
-	?_maxShiftTime = max{ ?_sortedMaxSTime[?shift] | ?shift[timeObject -> ?_maxSTimes], ?shift :: Shift, ?_maxSTimes[sortValue -> ?_sortedMaxSTime]},
-	?_minPreferenceTime = min{ ?_sortedMinPTime[?employee] | ?employee :: Employee, ?employee[preference -> ?_preference], ?_preference :: Preference, ?_preference[timeObject -> ?_minPTimes], ?_minPTimes[sortValue -> ?_sortedMinPTime] },
-	?_maxPreferenceTime = max{ ?_sortedMaxPTime[?employee] | ?employee :: Employee, ?employee[preference -> ?_preference], ?_preference :: Preference, ?_preference[timeObject -> ?_maxPTimes], ?_maxPTimes[sortValue -> ?_sortedMaxPTime] },
+	?_minShiftTime = min{ ?_sortedMinSTime[?shift] | ?shift[timeObject -> ?_minSTimes], ?shift : Shift, ?_minSTimes[sortValue -> ?_sortedMinSTime] },
+	?_maxShiftTime = max{ ?_sortedMaxSTime[?shift] | ?shift[timeObject -> ?_maxSTimes], ?shift : Shift, ?_maxSTimes[sortValue -> ?_sortedMaxSTime]},
+	?_minPreferenceTime = min{ ?_sortedMinPTime[?employee] | ?employee : Employee, ?employee[preference -> ?_preference], ?_preference : Preference, ?_preference[timeObject -> ?_minPTimes], ?_minPTimes[sortValue -> ?_sortedMinPTime] },
+	?_maxPreferenceTime = max{ ?_sortedMaxPTime[?employee] | ?employee : Employee, ?employee[preference -> ?_preference], ?_preference : Preference, ?_preference[timeObject -> ?_maxPTimes], ?_maxPTimes[sortValue -> ?_sortedMaxPTime] },
 	?_minShiftTime =< ?_maxPreferenceTimes,
 	?_maxShiftTime >= ?_minPreferenceTime.
 */
