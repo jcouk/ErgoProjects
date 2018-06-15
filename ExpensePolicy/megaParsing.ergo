@@ -1,0 +1,116 @@
+∀(?x6)(employee(?x6)→∃(?x13)(E(?x20)(system(?x20)∧up(to)(♯)(?x13,5)∧delegate(in(?x20))(?x13))∧∀(?x27)(complete(expense)(report)(?x27)→∃(?x43)(behalf(of(?x6))(?x43)∧can(assign(on(?x43))(to(?x27))(?x6,?x13))))))
+
+A -> C, D, E, F -> G, H
+A == employee(?x6)
+C == system(?x20)
+D == up(to)(♯)(?x13,5)
+E == delegate(in(?x20))(?x13))
+F == complete(expense)(report)(?x27)
+G == behalf(of(?x6))(?x43)
+H == can(assign(on(?x43))(to(?x27))(?x6,?x13))
+
+\neg A ; ( \neg C; \neg D; \neg E; \neg F ; ( G, H ) )
+
+\neg A ; ( (\neg C ; G) , (\neg C ; H) ) ; ( (\neg D ; G) , (\neg D ; H)  ) ; ( (\neg E ; G) , (\neg E ; H) ) ; ( (\neg F ; G) , (\neg F ; H) )
+//question is are these giant or statements connected to each other?
+
+
+( (\neg A ; \neg C ; G ) , ( \neg A ; \neg C ; H) ) ; ( (\neg A ; \neg D ; G) , (\neg A ; \neg D ; H) ) ; ( (\neg A ; \neg E ; G) , (\neg A ; \neg E ; H) ) ; ( (\neg A ; \neg F ; G) , (\neg A ; \neg F ; H) ) 
+																													( (\neg A ; \neg E ; G) ; (\neg A ; \neg F ; G)) , 	( (\neg A ; \neg E ; G) ;  (\neg A ; \neg F ; H) ),  ( (\neg A ; \neg E ; H)  ; (\neg A ; \neg F ; G) ), ((\neg A ; \neg E ; H)  ; (\neg A ; \neg F ; H) ) 																							
+
+																															(		I			,		U	)	;			(	J			,			P	)					
+																																						(I ; J), (I ; P), (U ; J), (U ; P)														
+
+
+
+
+( A ; B  ) , ( A ; D )
+
+∀(?x6)(employee(?x6)→∃(?x13)(E(?x20)(system(?x20)∧up(to)(♯)(?x13,5)∧delegate(in(?x20))(?x13))∧∀(?x27)(complete(expense)(report)(?x27)→∃(?x43)(behalf(of(?x6))(?x43)∧can(assign(on(?x43))(to(?x27))(?x6,?x13))))))
+
+∀(?x6)E(?x13)E(?x20)∀(?x27)∃(?x43)((system(?x20)∧up(to)(♯)(?x13,5)∧delegate(in(?x20))(?x13))∧(complete(expense)(report)(?x27)→(behalf(of(?x6))(?x43)∧can(assign(on(?x43))(to(?x27))(?x6,?x13)))))
+
+∀(?x6)E(?x13)E(?x20)∀(?x27)∃(?x43)(→(behalf(of(?x6))(?x43)∧can(assign(on(?x43))(to(?x27))(?x6,?x13)))))
+
+
+
+
+\neg ( ( system(?x20)∧up(to)(♯)(?x13,5)∧delegate(in(?x20))(?x13))∧(complete(expense)(report)(?x27) ) ; (behalf(of(?x6))(?x43)∧can(assign(on(?x43))(to(?x27))(?x6,?x13)))
+
+( \neg system(?x20) ; \neg up(to)(♯)(?x13,5) ; \neg delegate(in(?x20))(?x13) ; \neg complete(expense)(report)(?x27) ) ;  (behalf(of(?x6))(?x43)∧can(assign(on(?x43))(to(?x27))(?x6,?x13)))
+
+∀(?x6)\##13(?x6)\##20(?x6)∀(?x27)\##43(?x6, ?x27)
+
+( \neg system(\##20(?x6)) ; \neg up(to)(♯)(\##13(?x6),5) ; \neg delegate(in(\##20(?x6)))(\##13(?x6)) ; \neg complete(expense)(report)(?x27) ) ;  (behalf(of(?x6))(\##43(?x6, ?x27))∧can(assign(on(\##43(?x6, ?x27)))(to(?x27))(?x6,\##13(?x6))))
+
+\neg employee(?x6) ; \neg system(\##20(?x6)) ; \neg up(to)(♯)(\##13(?x6),5) ; \neg delegate(in(\##20(?x6)))(\##13(?x6)  ; \neg complete(expense)(report)(?x27) ) ; ( behalf(of(?x6))(\##43(?x6, ?x27)) , can(assign(on(\##43(?x6, ?x27)))(to(?x27))(?x6,\##13(?x6))))
+
+employee(?x6) -> \neg system(\##20(?x6)) ; \neg up(to)(♯)(\##13(?x6),5) ; \neg delegate(in(\##20(?x6)))(\##13(?x6)  ; \neg complete(expense)(report)(?x27) ) ; ( behalf(of(?x6))(\##43(?x6, ?x27)) , can(assign(on(\##43(?x6, ?x27)))(to(?x27))(?x6,\##13(?x6))))
+
+
+\neg employee(?x6) ; \neg system(\##20(?x6)) ; \neg up(to)(♯)(\##13(?x6),5) ; \neg delegate(in(\##20(?x6)))(\##13(?x6)  ; \neg complete(expense)(report)(?x27) ) ; ( behalf(of(?x6))(\##43(?x6, ?x27)) , can(assign(on(\##43(?x6, ?x27)))(to(?x27))(?x6,\##13(?x6))))
+
+
+\neg employee(?x6) ; ( behalf(of(?x6))(\##43(?x6, ?x27)) , can(assign(on(\##43(?x6, ?x27)))(to(?x27))(?x6,\##13(?x6))))
+
+
+( \neg employee(?x6) ;  behalf(of(?x6))(\##43(?x6, ?x27)) ) , ( \neg employee(?x6) ; can(assign(on(\##43(?x6, ?x27)))(to(?x27))(?x6,\##13(?x6))) )
+
+employee(?x6) -> behalf(of(?x6))(\##43(?x6, ?x27))
+
+
+behalf(of(?x6))(\##43(?x6, ?x27)) :- 
+	employee(?x6)
+
+can(assign(on(\##43(?x6, ?x27)))(to(?x27))(?x6,\##13(?x6))) :-
+	employee(?x6)
+	
+\neg employee(?x6) :-
+	\neg behalf(of(?x6))(\##43(?x6, ?x27))
+	
+\neg employee(?x6) :- 
+	\neg can(assign(on(\##43(?x6, ?x27)))(to(?x27))(?x6,\##13(?x6)))
+
+	
+	
+\neg A ; \neg B ; (C , D)
+
+( (\neg A ; C) ^ (\neg A ; D) ) ; ( (\neg B ; C) ^ (\neg B ; D) )
+
+)	
+
+
+
+A == employee(?x6)
+C == system(?x20)
+D == up(to)(♯)(?x13,5)
+E == delegate(in(?x20))(?x13))
+F == complete(expense)(report)(?x27)
+G == behalf(of(?x6))(?x43)
+H == can(assign(on(?x43))(to(?x27))(?x6,?x13))
+
+
+( (\neg A ; \neg E ; G) ; (\neg A ; \neg F ; G))
+
+\neg employee(?x6) ; \neg delegate(in(?x20))(?x13)) ; behalf(of(?x6))(?x43) ; complete(expense)(report)(?x27)
+
+employee(?x6) -> \neg delegate(in(?x20))(?x13) ; behalf(of(?x6))(?x43) ; complete(expense)(report)(?x27)
+
+\neg employee(?x6) :-
+	delegate(in(?x20))(?x13),
+	\neg behalf(of(?x6))(?x43), 
+	\neg complete(expense)(report)(?x27).
+	
+
+
+
+
+
+
+
+
+
+
+
+
+	

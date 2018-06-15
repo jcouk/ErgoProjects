@@ -1,0 +1,17 @@
+findAllBaseLevelForAGoal(?goal, ?rules) :-
+	baseLevel(?goal, ?rules) ;
+	(
+		intermediate(?goal, ?_intRules),
+		findAllBaseLevel(?_intRules, ?rules)
+	).
+	
+	
+intermediate(?goal, ?rules) :-
+	structdb{?goal, all, ?_i, ?_m, ?_f}, structdb{?_i, ?_m, ?_f, ?rules, ?_l, ?_c}, 
+	structdb{?rules, all+head, ?_, ?_, ?_}, structdb{?rules, all+body, ?_, ?_, ?_}.
+
+	
+//example: baseLevel(${cell(?_)}, ?X).
+baseLevel(?goal, ?rules) :-
+  structdb{?goal, all, ?_i, ?_m, ?_f}, structdb{?_i, ?_m, ?_f, ?rules, ?_l, ?_c}, 
+  structdb{?rules, all+body, ?_i, ?_m, ?_f}, ?_num = count{ ?_int | structdb{?rules, all+head, ?_int, ?_m, ?_f}  }, ?_num == 0.

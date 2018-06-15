@@ -1,0 +1,127 @@
+
+:- compiler_options{omni=on}.
+:- use_argumentation_theory.
+:- symbol_context{expense/?, submit/?, require/?, be/?, nominalization/?}.
+:- use_rule_structure_db.
+
+//employees are required to submit expense reports 
+//∀(?x6)(employee(?x6)→∃(?x13)(expense(report)(?x13)∧be(require(of))(?x6,submit(?x6,?x13))))
+
+employee(?_x6) ==> expense(report)(\##13(?_x6)), be(require(of))(?_x6,submit(?_x6,\##13(?_x6))).
+
+
+//expense reports must be submitted by the suggested due date 
+//TO-DO
+
+//delegates can submit expenses on behalf of an employee
+// possible issue (maybe swap 'expense' with expense(report)  )
+//∀(?x18)(employee(?x18)→∃(?x6)(delegate(?x6)∧∃(?x11)(expense(?x11)∧can(submit(on(behalf(of))(?x18))(?x6,?x11)))))
+
+employee(?_x18) ==> delegate(\##6(?_x18)), expense(\##11(?_x18)), can(submit(on(behalf(of))(?_x18))(\##6(?_x18),\##11(?_x18))).
+
+
+//an employee can assign up to five delegates
+//TO-DO
+
+
+//a receipt is required for hotel expenses
+//∀(?x11)(hotel(expense)(?x11)→∃(?x7)(receipt(?x7)∧be(require(for(?x11)))(?x7)))
+
+hotel(expense)(?_x11) ==> receipt(\##7(?_x11)), be(require(for(?_x11)))(\##7(?_x11)).
+
+
+//a receipt is required for smartphone expenses
+//∀(?x11)(smartphone(expense)(?x11)→∃(?x7)(receipt(?x7)∧be(require(for(?x11)))(?x7)))
+
+smartphone(expense)(?_x11) ==> receipt(\##7(?_x11)), be(require(for(?_x11)))(\##7(?_x11)).
+
+//a receipt is required for miscellaneous expenses
+//∀(?x11)(miscellaneous(expense)(?x11)→∃(?x7)(receipt(?x7)∧be(require(for(?x11)))(?x7)))
+
+miscellaneous(expense)(?_x11) ==> receipt(\##7(?_x11)), be(require(for(?_x11)))(\##7(?_x11)).
+
+//a receipt is required for rental car expenses
+//∀(?x11)(rental(car)(expense)(?x11)→∃(?x7)(receipt(?x7)∧be(require(for(?x11)))(?x7)))
+
+rental(car)(expense)(?_x11) ==> receipt(\##7(?_x11)), be(require(for(?_x11)))(\##7(?_x11)).
+
+//a receipt is required for taxable reimbursement expenses
+//∀(?x11)(taxable(reimbursement)(expense)(?x11)→∃(?x7)(receipt(?x7)∧be(require(for(?x11)))(?x7)))
+
+taxable(reimbursement)(expense)(?_x11) ==> receipt(\##7(?_x11)), be(require(for(?_x11)))(\##7(?_x11)).
+
+
+//a receipt is required for an expense if
+//the expense is related to a federal service engagement and
+// the expense is over $25
+
+
+//∀(?x11)(expense(?x11)→∃(?x7)(receipt(?x7)∧be(require(for(?x11)))(?x7))) :-
+// ∃(?x7)(expense(?x7)∧∃(?x10)(federal(service)(engagement)(?x10)∧be(relate(to(?x10)))(?x7))) ,
+// ∃(?x12)♯(?x12,25)∧dollar(?x12)∧∃(?x7)(expense(?x7)∧over∧be(?x7)) TO-DO
+
+expense(?_x11) ==> receipt(\##7(?_x11)), be(require(for(?_x11)))(\##7(?_x11)) :-
+	expense(?_x11), federal(service)(engagement)(?_x10), be(relate(to(?_x10)))(?_x11),
+	amount(expense(?_x11), ?_x12), be(over)(25)(?_x12).
+	
+be(over)(?_x10)(?_x11) :-
+	?_x10 < ?_x11.
+
+
+	
+	
+//a non-compliance will be issued to an employee if
+//the employee did not use the diners club buffer for an expense
+
+//♯(1)∧∀(?x22)(employee(?x22)→conjunction(subordinating)(∃(?x9)(non(compliance)(?x9)∧be(?x9)),be(issue(to(?x22))))) :-
+//∃(?x7)(employee(?x7)∧∃(?x30)(expense(?x30)∧¬(∃(?x13)(⊆(?x18)(named(diners)(?x18)∧compound(?x13,?x18)∧club(buffer)(?x13))∧use(for(?x30))(?x7,?x13)))))
+
+
+employee(?_x22) ==> non(compliance)(\##9(?_x22)), be(issue(to(?_x22)))(\##9(?_x22)) :-
+	employee(?_x22), expense(?_x30),  diners(club)(buffer)(?_x13),  \neg use(for(?_x30))(?_x22,?_x13).
+
+	
+//Original documents must be mailed to the KPMG scanning facility if
+//Documentation for an expense is required
+//∀(?x6)(original(document)(?x6)→must(∃(?x15)(∃(?x22)(named(KPMG)(?x22)∧∃(?x27)(facility(?x27)∧nominalization(?x15,scan(?x22,?x27))))∧be(mail(to(?x15)))(?x6)))) :-
+// ∃(?x6)(∀(?x10)(expense(?x10)→documentation(for(?x10))(?x6))∧conjunction(subordinating)(be(?x6),be(require)))
+
+original(document)(?_x6) ==> must(named(KPMG)(\##22(?_x6)), facility(\##27(?_x6)), nominalization(be(mail(to(\##15(?_x6))))(?_x6),scan(\##22(?_x6),\##27(?_x6))), be(mail(to(\##15(?_x6))))(?_x6)) :-
+ expense(?_x10) ==> documentation(for(?_x10))(\##6(?_x10)), conjunction(subordinating)(be(\##6(?_x10)), be(require)).
+	
+
+
+//Documentation for an expense is required if
+//the expense was incurred while traveling outside the United States
+// ∃(?x6)(∀(?x10)(expense(?x10)→documentation(for(?x10))(?x6))∧conjunction(subordinating)(be(?x6),be(require))) :-
+// ∃(?x10)(∃(?x20)(named(United States)(?x20)∧nominalization(?x10,be(travel))∧outside(?x10,?x20))∧∃(?e3)∃(?x7)(expense(?x7)∧while(?e3,?x10)∧be(incur)(?e3)(?x7)))
+
+expense(?_x10) ==> documentation(for(?_x10))(\##6(?_x10)), conjunction(subordinating)(be(\##6(?_x10)),be(require)) :-
+	named('United States')(?_x20), nominalization(?_x11, be(travel)), outside(?_x11,?_x20), expense(?_x10), while(?_x3,?_x11), be(incur)(?_x3)(?_x10).
+
+
+//question test..
+// ∃(?x6)(receipt(?x6)∧conjunction(subordinating)(be(be)(?x6),be(require)))
+
+
+// receipt(?x6), conjunction(subordinating)(be(be)(?x6),be(require))
+
+//receipt(\##7(?_x11)), be(require(for(?_x11)))(\##7(?_x11))
+
+receipt(\##7(?_x6)), conjunction(subordinating)(be(be)(?_x6),be(require)) :-
+	expense(?_x6) ==> receipt(\##7(?_x6)), be(require(for(?_x6)))(\##7(?_x6)).
+
+	
+?_x(expense)(?_x6) ==> expense(?_x6).	
+	
+// /naf 
+
+expense(Dennys). 
+//federal(service)(engagement)(KOLEA).
+//be(relate(to(KOLEA)))(Dennys).
+amount(expense(Dennys), 100).
+
+
+// coooooL!
+// clause{${\neg ?X(expense)(?D)@main}, ?Y}.
+// clause{@!{?rule} ?X, ${?Y(expense)(?D)}}.

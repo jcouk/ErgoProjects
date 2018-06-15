@@ -1,0 +1,79 @@
+
+:- compiler_options{omni=on}.
+:- use_argumentation_theory.
+:- symbol_context{expense/?}.
+
+
+
+//an employee can assign up to five delegates
+
+
+//  ♯(?x17,5), (employee(?x7) → ∃(?x12)(delegate(?x12)∧can('at most'∧assign(?x7,?x12))))
+//  ♯(?x17,5), (employee(?_x7) → ∃(?x12)(delegate(\##12(?_x7))∧can('at most'∧assign(?_x7,\##12(?_x7))))
+
+/*
+employee(?_x7) ==> 
+	delegate(\##12(?_x7)), 
+	can(assign(?_x7,\##12(?_x7)).
+*/
+
+//∀(?x11)(hotel(expense)(?x11)→∃(?x7)(receipt(?x7)∧be(require(for(?x11)))(?x7)))
+
+// try clause{head,body}
+
+//hotel(expense)(?_x11) ==> receipt(\##7(?_x11)), be(require(for(?_x11)))(\##7(?_x11)).
+
+hotel(expense)(?_x11) ==> receipt(\##7(?_x11)), be(require(for(?_x11)))(\##7(?_x11)).
+
+
+
+hotel(expense)(one).
+
+//receipt(two).
+
+
+//∀(?x11)(smartphone(expense)(?x11)→∃(?x7)(receipt(?x7)∧be(require(for(?x11)))(?x7)))
+
+
+smartphone(expense)(?_x11) ==> receipt(\##7(?_x11)), be(require(for(?_x11)))(\##7(?_x11)).
+
+
+
+//something to think about
+/*
+template(headbody,
+          \(?x11 is an expense over $25 related to federal service engagements\),
+          (
+           federal(service(engagement))(\##26(?_x11)),
+		   federal(service(engagement))(\##26(?_x11))
+          )
+        ).
+*/
+
+
+//∀(?x11)(expense(?x11) → ∃(?x7)(receipt(?x7)∧be(require(for(?x11)))(?x7)))
+
+//∃(?x7)(expense(?x7)∧∃(?x10)(federal(service)(engagement)(?x10)∧be(relate(to(?x10)))(?x7)))
+//∃(?x12)♯(?x12,25)∧dollar(?x12)∧∃(?x7)(expense(?x7)∧over∧be(?x7))
+
+
+ expense(?_x11) ==>
+	receipt(\##7(?_x11)),
+	be(require(for(?_x11)))(\##7(?_x11)) :-
+		expense(?_x11), federal(service(engagement))(\##18(?_X11)), be(relate(to(\##10(?_X11))))(\##18(?_X11)).
+		
+
+
+/*
+( type(?_x11, hotel) ; type(?_x11, smartphone) ),  expense(?_x11) ==> receipt(Required)(?_x11).
+
+expense(1212).
+type(1212, hotel).
+
+
+expense(1214).
+type(1214, food).
+
+
+1-514550101
+*/

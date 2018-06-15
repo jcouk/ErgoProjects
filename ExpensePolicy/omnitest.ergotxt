@@ -1,0 +1,30 @@
+
+
+template(headbody,
+          \(There is a cell with ID ?id\),
+          cell(?id)
+        ).
+	
+template(headbody,
+          \(There is not a cell with ID ?id\),
+          \neg cell(?id)
+        ).
+
+template(headbody,
+          \(There is a nucleus with ID ?id\),
+          nucleus(?id)
+        ).		
+template(headbody,
+          \(There is not a nucleus with ID ?id\),
+          \neg nucleus(?id)
+        ).		
+		
+		
+template(headbody,
+          \(The cell with ID ?cellId which does not have a nucleus with ID ?nucID\),
+          \neg have(?cellId, ?nucID)
+        ).			
+template(headbody,
+          \(The cell with ID ?cellId has a nucleus with ID ?nucID\),
+          have(?cellId, ?nucID)
+        ).		

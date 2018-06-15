@@ -1,0 +1,171 @@
+
+
+//structdb{cell(?_), all, ?i, ?m, ?f}, structdb{?i, ?m, ?f, ?g(?_), ?l, ?c}, ?g(?x), clause{@!{?i} ?Head, ?Body}.
+
+// all+body
+// structdb{cell(?_), all+head, ?i, ?m, ?f}, structdb{?i, ?m, ?f, ?g(?), ?l, ?c}, ?g(?x), clause{@!{?i} ?Head, ?Body}.
+
+//  base level
+// structdb{red(blood(cell))(?_), all+body, ?i, ?m, ?f}, \naf structdb{red(blood(cell))(?_), all+head, ?i, ?m, ?f}.
+
+//  top level
+// structdb{red(blood(cell))(?_), all+head, ?i, ?m, ?f}, \naf structdb{red(blood(cell))(?_), all+body, ?i, ?m, ?f}.
+
+
+//structdb{cell(?_), all, ?i, ?m, ?f}, structdb{?i, ?m, ?f, ?g(?), ?l, ?c}.
+
+
+// what are the base level attributes that prove a thing is a cell
+	// structdb{cell(?_), all, ?i, ?m, ?f}, structdb{?i, ?m, ?f, ?g, ?l, ?c}, 
+	//	structdb{?g, all+body, ?i, ?m, ?f}, \naf structdb{?g, all+head, ?i, ?m, ?f}.
+
+	
+// what are the intermediate level attributes that prove a thing is a cell
+	// structdb{cell(?_), all, ?i, ?m, ?f}, structdb{?i, ?m, ?f, ?g, ?l, ?c}, 
+	//	structdb{?g, all+head, ?i, ?m, ?f}, structdb{?g, all+body, ?i, ?m, ?f}.	
+	
+findAllBaseLevelForAGoal(?goal, ?rules) :-
+	baseLevel(?goal, ?rules) ;
+	(
+		intermediate(?goal, ?_intRules),
+		findAllBaseLevel(?_intRules, ?rules)
+	).
+	
+	
+intermediate(?goal, ?rules) :-
+	structdb{?goal, all, ?_i, ?_m, ?_f}, structdb{?_i, ?_m, ?_f, ?rules, ?_l, ?_c}, 
+	structdb{?rules, all+head, ?_, ?_, ?_}, structdb{?rules, all+body, ?_, ?_, ?_}.
+
+	
+//example: baseLevel(${cell(?_)}, ?X).
+baseLevel(?goal, ?rules) :-
+  structdb{?goal, all, ?_i, ?_m, ?_f}, structdb{?_i, ?_m, ?_f, ?rules, ?_l, ?_c}, 
+  structdb{?rules, all+body, ?_i, ?_m, ?_f}, ?_num = count{ ?_int | structdb{?rules, all+head, ?_int, ?_m, ?_f}  }, ?_num == 0.
+	
+// what oids are proven based on the goal cell(?_).
+// structdb{cell(?_), all+body, ?i, ?m, ?f}, structdb{?i, ?m, ?f, ?g, ?l, ?c}, structdb{?g, all+head, ?i, ?m, ?f}
+
+
+:- compiler_options{omni=on}.
+:- use_argumentation_theory.
+:- ergotext{'omnitest.ergotxt'}.
+:- use_rule_structure_db.
+
+/*
+\neg A(?_x) ==> B(\##1(?_X)) ; C(\##1(?_X)).
+
+
+${A(?_h2740)@main} :-
+(${\neg B(\##1(?_h2760))@main}, ${\neg C(\##1(?_h2760))@main})
+
+\neg cell(?x7) :- \neg nucleus(f9(?x7)).
+nucleus(f9(?x7)) :- cell(?x7).
+\neg cell(?x7) :- \neg have(?x7,f9(?x7)).
+have(?x7,f9(x7)) :- cell(?x7).
+////////
+
+
+\neg red(color)(blood(cell))(?x6) :- (nucleus(?x19), have(?x6,?x19))
+\neg nucleus(?x19) :- (red(color)(blood(cell))(?x6), have(?x6,?x19))
+\neg have(?x6,?x19) :- (red(color)(blood(cell))(?x6), nucleus(?x19))
+
+
+*/
+
+
+//good
+//cell(?_x7) ==> nucleus(\#9(?_x7)), have(?_x7,\#9(?_x7)).
+
+/*
+@{default}
+ \(There is a nucleus with ID \##9(?_x7)\) :-
+	\(There is a cell with ID ?_x7\).
+
+ \(There is not a cell with ID ?_x7\) :-
+	 \(There is not a nucleus with ID \##9(?_x7)\) ;  \(The cell with ID ?_x7 does not have a nucleus with ID \##9(?_x7)\).
+
+
+ \(The cell with ID ?_x7 has a nucleus with ID \##9(?_x7)\) :-
+	\(There is a cell with ID ?_x7\).
+
+\overrides(RedBloodCell,default).	
+*/
+
+
+//good
+
+@!{r1}
+cell(?_x7) ==> nucleus(\##9(?_x7)), have(?_x7,\##9(?_x7)) :-
+	\naf red(blood(cell))(?_x7) ;
+	\neg red(blood(cell))(?_x7).
+
+
+/*
+@{default}
+nucleus(\##9(?_x7)) :-
+	   cell(?_x7).
+
+\neg cell(?_x7) :-
+	 \neg nucleus(\##9(?_x7)) ;  
+	 \neg have(?_x7, \##9(?_x7)).
+
+have(?_x7, \##9(?_x7)) :-
+	cell(?_x7).
+*/
+
+//javaws https://linguist.haleyai.com/webstart/Linguist.jnlp 
+
+
+//forall(?_x7)^exists(?_x8)^( have(?_x7, ?_x8), nucleus(?_x8)) <== cell(?_x7).
+// what is   (\naf ((\naf \neg have(?_h2780,?_h2781)@main), (\naf \neg nucleus(?_h2781)@main)))
+
+
+//∀(?x6)(red(blood(cell))(?x6)→¬(∃(?x13)(nucleus(?x13)∧have(?x6,?x13))))
+
+//good
+//red(blood(cell))(?_x6) ==> \neg nucleus(?_x13) ; \neg have(?_x6,?_x13).
+/*
+@!{r2}
+\neg red(blood(cell))(?_x6) :-
+	nucleus(?_x13) , have(?_x6,?_x13).
+*/
+
+@!{RedBloodCell}
+\neg nucleus(?_x13) :-
+	red(blood(cell))(?_x6), have(?_x6,?_x13).
+@!{r3}
+\neg have(?_x6, ?_x13) :-
+	nucleus(?_x13), red(blood(cell))(?_x6).
+
+
+
+//\overrides(RedBloodCell,default).	
+
+
+// ∀(?x7)(red(blood(cell))(?x7)→∃(?x10)(∃(?x15)(cell(?x15)∧type(of(?x15))(?x10))∧be(?x7,?x10)))
+//good
+
+//red(blood(cell))(?_x7) ==> cell(?_x7).  , be(?_x7, \#15(?_x7)). type(of(\#15(?_x7)))(\#10(?_x7)), be(?_x7, \#10(?_x7)).
+
+@!{r4}
+cell(?_x7) :-
+	red(blood(cell))(?_x7).
+
+
+red(blood(cell))(1234).
+cell(4321).
+
+//cell(4321).
+
+//test(one).
+
+//test(two).
+
+/*
+against(test), test(two).
+
+blood(cell(one)).
+cell(two).
+
+red(color)(blood(cell)).
+*/

@@ -1,0 +1,42 @@
+:- use_argumentation_theory.
+:- use_rule_structure_db.
+
+
+@{default} 
+?X:Flies :- ?X:Bird. // all birds fly (by default)
+@{penguin} 
+\neg ?X:Flies :- ?X:Penguin. // but penguins don’t
+@{wounded} 
+\neg ?X:Flies :- ?X:Wounded. // and neither do wounded things
+Penguin::Bird. // penguins are birds
+Sam:Penguin. // Sam is a penguin
+Fred:Bird. // Fred is a bird
+Bob:{Bird,Wounded}. // Bob is a wounded bird
+\overrides({wounded,penguin},default). // being wounded or penguin
+
+?X:Wounded :-
+	?X:broken.
+
+?X:Wounded :-
+	?X:poisoned.
+
+?X:Wounded :-
+	?X:blind.	
+	
+findAllBaseLevel(?goal, ?rules) :-
+	baseLevel(?goal, ?rules) ;
+	(
+		intermediate(?goal, ?_intRules),
+		findAllBaseLevel(?_intRules, ?rules)
+	).
+	
+	
+intermediate(?goal, ?rules) :-
+	structdb{?goal, all, ?_i, ?_m, ?_f}, structdb{?_i, ?_m, ?_f, ?rules, ?_l, ?_c}, 
+	structdb{?rules, all+head, ?_, ?_, ?_}, structdb{?rules, all+body, ?_, ?_, ?_}.
+
+	
+//example: baseLevel(${cell(?_)}, ?X).
+baseLevel(?goal, ?rules) :-
+  structdb{?goal, all, ?_i, ?_m, ?_f}, structdb{?_i, ?_m, ?_f, ?rules, ?_l, ?_c}, 
+  structdb{?rules, all+body, ?_i, ?_m, ?_f}, ?_num = count{ ?_int | structdb{?rules, all+head, ?_int, ?_m, ?_f}  }, ?_num == 0.
