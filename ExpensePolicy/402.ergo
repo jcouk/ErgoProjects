@@ -4,6 +4,15 @@
 :- symbol_context{expense/?, submit/?, require/?, be/?, nominalization/?}.
 :- use_rule_structure_db.
 
+
+
+//ruleBreaker(?rule, ?D, ?Y).  something to think about
+/*
+ruleBreaker(?I, ?X, ?Y) :-
+	 clause{@!{?I} ?X, ?Y(?_)};
+	  clause{@!{?I} ?X, ?Y(?_T)(?_)}.
+*/	 
+
 //employees are required to submit expense reports 
 //∀(?x6)(employee(?x6)→∃(?x13)(expense(report)(?x13)∧be(require(of))(?x6,submit(?x6,?x13))))
 
@@ -65,6 +74,7 @@ expense(?_x11) ==> receipt(\##7(?_x11)), be(require(for(?_x11)))(\##7(?_x11)) :-
 	amount(expense(?_x11), ?_x12), be(over)(25)(?_x12).
 	
 be(over)(?_x10)(?_x11) :-
+	isnumber{?_x11},
 	?_x10 < ?_x11.
 
 
@@ -100,6 +110,12 @@ expense(?_x10) ==> documentation(for(?_x10))(\##6(?_x10)), conjunction(subordina
 	named('United States')(?_x20), nominalization(?_x11, be(travel)), outside(?_x11,?_x20), expense(?_x10), while(?_x3,?_x11), be(incur)(?_x3)(?_x10).
 
 
+	
+	
+	
+	
+	
+	
 //question test..
 // ∃(?x6)(receipt(?x6)∧conjunction(subordinating)(be(be)(?x6),be(require)))
 
@@ -117,11 +133,17 @@ receipt(\##7(?_x6)), conjunction(subordinating)(be(be)(?_x6),be(require)) :-
 // /naf 
 
 expense(Dennys). 
+other(expense)(parking).
 //federal(service)(engagement)(KOLEA).
 //be(relate(to(KOLEA)))(Dennys).
 amount(expense(Dennys), 100).
 
 
-// coooooL!
+// coooooL! 
+// Hello my name is Joey Couk and I'm manager at KPMG, within the State and local advisory practice.  I specialize in creating eligibility systems for programs like Medicaid, SNAP and TANF.  
+// I'm currently working on the State of Hawaii's Medicaid case management and eligibility solution.
 // clause{${\neg ?X(expense)(?D)@main}, ?Y}.
 // clause{@!{?rule} ?X, ${?Y(expense)(?D)}}.
+
+//Does ?X proves ?Y? or How does ?X prove ?Y
+//structdb{receipt(?_), all+head, ?_i, ?_, ?_}, structdb{expense(?_) , all+body, ?_i, ?_, ?_}, clause{@!{?_i} ?X, ?Y}.	
