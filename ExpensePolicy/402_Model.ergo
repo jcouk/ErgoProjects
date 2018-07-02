@@ -1,0 +1,77 @@
+/*
+employee(?_x6) ==> expense(report)(\##13(?_x6)), be(require(of))(?_x6,submit(?_x6,\##13(?_x6))).
+
+employee(?_x18) ==> delegate(\##6(?_x18)), expense(\##11(?_x18)), can(submit(on(behalf(of))(?_x18))(\##6(?_x18),\##11(?_x18))).
+*/
+
+:- compiler_options{omni=on}.
+:- symbol_context{expense/?, submit/?, require/?, be/?, nominalization/?, club/?}.
+:- use_rule_structure_db.
+
+#include "402.ergo"
+
+/*
+*/
+
+
+Employee
+[|
+	be(require(of)) => {   Employee
+							[
+								submit => ExpenseReport
+							]
+						}
+	
+|].
+
+Expense
+[|
+|].
+
+Delegate
+[|
+
+	can => { 	Delegate
+				[
+					submit => 	Employee
+								[
+									on(behalf(of)) => ExpenseReport
+								]   
+				] 
+			}
+	
+|].
+
+ExpenseReport
+[|
+|].
+
+//input mappings
+
+?x[be(require(of)) -> {?x[submit -> ?y ]} ] :-
+	be(require(of))( ?x, { submit(?x,?y) }).
+	
+?y[can -> {?y[submit -> ?x[on(behalf(of)) -> ?z]  ]} ] :-
+	can( {  submit(on(behalf(of))(?x))(?y,?z)  }).
+
+employee(?x) :-
+	?x:Employee.
+	
+//output Mppings
+?x : Delegate :-
+	delegate(?x).
+	
+?x : ExpenseReport :-
+	expense(report)(?x).
+
+	
+	
+	
+	
+// meta-data for an attribute
+// query all schema data:  Model_Desc(?Y, ?X), Model_Values(?Y,?X,?Z). 
+
+Model_Desc(Employee( be(require(of)) ), {type, context, desc, notes}).
+Model_Values(Employee( be(require(of)) ), context, interMeid).
+Model_Values(Employee( be(require(of)) ), desc, 'part of a rule that describes that the employee is required to submit').
+Model_Values(Employee( be(require(of)) ), notes, 'test' ).  

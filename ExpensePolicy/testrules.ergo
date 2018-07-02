@@ -1,0 +1,25 @@
+:- compiler_options{omni=on}.
+:- use_argumentation_theory.
+:- use_rule_structure_db.
+
+
+expense(?_x11) ==> receipt(\##7(?_x11)), be(require(for(?_x11)))(\##7(?_x11)).
+ 
+//expense(?_x10) ==> documentation(for(?_x10))(\#6(?_x10)), conjunction(subordinating)(be(\#6(?_x10)), be(require)).
+	
+
+/*
+mustache(?_x) ==> babes(\#mustache(?_x)).
+
+babes(?_x) ==> expenses(\#babes(?_x)).
+*/
+
+
+// find the starting point and the thing it infers - ?Y(?X), \naf ?X:\skolem, ?D(?SK(?X)).
+
+
+//	 clause{receipt(?_), ?Z}, cloneterm{?Z, (?B, ?C, ?D, ?F, ?H, ?M)}.
+
+// 
+
+
