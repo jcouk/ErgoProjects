@@ -12,20 +12,16 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Vector;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonBuilderFactory;
-import javax.json.JsonObject;
+import javax.servlet.ServletContext;
+import javax.ws.rs.core.Context;
+
+import org.json.JSONObject;
+import org.kpmg.ergows.eligibility.model.Person;
 
 import net.sf.flora2.API.FloraObject;
 import net.sf.flora2.API.FloraSession;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.kpmg.ergows.eligibility.model.Person;
 
 /**
  * @author jcouk
@@ -34,7 +30,159 @@ import org.kpmg.ergows.eligibility.model.Person;
 public class ErgoCalculations {
 
 	private static String basicMod = "basic_mod";
+	
+	public static FloraSession getfloraSession(ServletContext context) throws Exception
+	{
+		FloraSession result = null;
 
+	    // Search for an implementation
+	    // 1. ServletContext attribute (set by application or cached by a
+	    //    previous call to this method).
+	    Object attribute = context.getAttribute("floraSession");
+	    if (attribute instanceof FloraSession) {
+	    	System.out.println("Found Existing Flora Session in context!");
+	        return (FloraSession) attribute;
+	    } else if (attribute instanceof String) {
+	        result = new FloraSession();
+	        System.out.println("Context element attribute is a string??!");
+	    }
+
+	    // 2. ServletContext init parameter
+	    
+	    /*
+	    if (result == null) {
+	        String className =
+	                context.getInitParameter("floraSession");
+	         if (className != null) {
+	            result = createInstance(context, className);
+	        }
+	        
+	    }
+	     */
+	    // 3. Default
+	    if (result == null) {
+	    	 System.out.println("Context attribute appears to be null, creating new session");
+	    	result = new FloraSession();
+	       
+	    }
+
+	    // Cache the result for next time
+	    context.setAttribute("floraSession", result);
+	    System.out.println("saved session to context with id: floraSession");
+	    return result;
+	}
+	
+	public static Boolean determineIfValidDate(String dayOfWeek, int dayNum, String month, int year, File rulesFile, ServletContext context)
+	{
+		System.setProperty("PROLOGDIR", Constants.PROLOG_DIRECTORY);
+		System.setProperty("FLORADIR", Constants.FLORA_DIRECTORY);
+		//FloraSession session = new FloraSession();
+		
+		FloraSession session = null;
+		try {
+			 System.out.println("attempting to get Flora Session");
+			session = getfloraSession(context);
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		Boolean isValidDate = false;
+		
+		// create a new session for a running instance of the engine
+		//FloraSession session = new FloraSession();
+/*
+ * 		if(session == null)
+ 
+		{
+			session = new FloraSession();
+		}
+*/		
+		
+		if(!isLoaded(session))
+		{
+			// Assume that Java was called with -DINPUT_FILE=the-file-name
+			
+			String fileName = null;
+			//System.out.println(rulesFile.getURL().getPath());
+			try {
+				if(System.getProperty("os.name").contains("Windows")) {
+					fileName = rulesFile.toURI().toURL().toString().substring(6);
+	            }else if(System.getProperty("os.name").contains("Linux")){
+	    			fileName = rulesFile.toURI().toURL().toString().substring(5);
+	            }
+				System.out.println("fileName: " + fileName);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+					
+			if(fileName == null || fileName.trim().length() == 0) 
+			{
+				System.out.println("Invalid path to example file!");
+				System.exit(0);
+			}
+			// load the program into module basic_mod
+			if (session.loadFile(fileName,basicMod)){
+				System.out.println("Example loaded successfully!");
+				context.setAttribute("floraSession", session);
+				System.out.println("context updated with session with loaded rules");
+			} else {
+				System.out.println("Error loading the example!");
+			}
+				// add person information Note: Name is included in the other inserts.
+				
+			
+		}
+
+		
+		String dateQuery = "dayOfWeekCalcObj(" + dayOfWeek + ", " + dayNum + ", " + month + ", " + year +")"; 
+		
+		isValidDate = returnBooleanValue(session,
+				dateQuery);
+
+			
+		//System.out.println("Engine session started");
+
+		return isValidDate;
+		
+	}
+	
+	private static Boolean returnBooleanValue(FloraSession session,
+			String query) {
+		
+		String ergoQuery = query + "@" + basicMod + ".";
+		System.out.println("ergoQuery: "+ergoQuery);
+		Iterator<FloraObject> reponseObject = session.ExecuteQuery(ergoQuery);
+
+		/* Identifying the person in the Iterator */
+		while (reponseObject.hasNext()) {
+			FloraObject responseObj = reponseObject.next();
+			System.out.println("response:" + responseObj);
+			return Boolean.TRUE;
+		}
+
+		System.out.println(query + " result: Person Name NOT found!");
+		return Boolean.FALSE;
+	}
+	
+	private static Boolean isLoaded(FloraSession session) {
+		
+		String ergoQuery = "isloaded{basic_mod}."; 
+		System.out.println("ergoQuery: "+ergoQuery);
+		Iterator<FloraObject> reponseObject = session.ExecuteQuery(ergoQuery);
+
+		/* Identifying the person in the Iterator */
+		while (reponseObject.hasNext()) {
+			FloraObject responseObj = reponseObject.next();
+			System.out.println("response:" + responseObj);
+			return Boolean.TRUE;
+		}
+
+		System.out.println(ergoQuery + " result: nothing loaded!");
+		return Boolean.FALSE;
+	}
+	
+	
 	public static Person determineEligibility(Person person, File rulesFile) {
 
 		//System.setProperty("PROLOGDIR", "C:\\Users\\kanwaryuvrajsingh\\Flora-2\\XSB\\config\\x64-pc-windows\\bin");
