@@ -1,7 +1,5 @@
 package org.kpmg.ergows.eligibility.controller;
 
-import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -11,9 +9,8 @@ import java.time.LocalDateTime;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import javax.ws.rs.ApplicationPath;
+import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.Encoded;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -21,13 +18,14 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Application;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.json.JSONObject;
+import org.kpmg.ergows.eligibility.model.DateModel;
 import org.kpmg.ergows.eligibility.model.Person;
 import org.kpmg.ergows.eligibility.service.ErgoService;
 import org.kpmg.ergows.eligibility.util.Constants;
@@ -36,6 +34,9 @@ import org.kpmg.ergows.eligibility.util.Constants;
 public class Controller extends Application {
 	
 	private static LocalDateTime dateTime;
+	
+	@Context
+	private ServletContext context; 
 	
 	public Controller() {
 		if(Constants.ErgoFilesDirectory == null || Constants.ErgoFilesDirectory.equals("")){
@@ -77,6 +78,7 @@ public class Controller extends Application {
 				"<hello>Hello "+ name+"</hello>";
 		return response;
 	}
+
 	
 	@POST
 	@Path("/personEligibility")
@@ -89,6 +91,23 @@ public class Controller extends Application {
 		Person personResponse = ergoService.getPersonEligibility(name, income, age, hhSize, hhMemberOlderThanSixtyFive, interestedInMedicaid, interestedInTANF, interestedInSNAP);
 		return personResponse;
 	}
+
+	@POST
+	@Path("/isValidDate")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces(MediaType.APPLICATION_JSON)
+	public DateModel isValidDate(@FormParam("dayOfWeek") String dayOfWeek, @FormParam("dayNum") int dayNum, @FormParam("month") String month, @FormParam("year") int year){
+		System.out.println("in isValidDate");
+		System.out.println(context);
+		ErgoService ergoService = new ErgoService();
+		Boolean response = ergoService.isValidDate(dayOfWeek, dayNum, month, year, context);
+		System.out.println("reseponse returned");
+		DateModel reponsemodel = new DateModel();
+	//	reponsemodel.setIsValid(response);
+		reponsemodel.setIsValid(response);
+		return reponsemodel;
+	}
+	
 	
 	@POST
 	@Path("/comparexml")
