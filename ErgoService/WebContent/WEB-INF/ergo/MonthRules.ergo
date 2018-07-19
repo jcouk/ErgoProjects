@@ -1,0 +1,165 @@
+
+
+/*
+	Month constants.  
+	Values: 	Month	(Month Number)	(Number of days in the month)
+*/
+months(vars, {'January'(01)(31), 'February'(02)(28), 'FebruaryLeap'(02)(29), 'March'(03)(31), 'April'(04)(30), 'May'(05)(31), 'June'(06)(30), 'July'(07)(31), 'August'(08)(31), 'September'(09)(30), 'October'(10)(31), 'November'(11)(30), 'December'(12)(31)}).
+
+// Generate Months
+
+?X :: Month[year -> ?_Y] :-
+	months(vars, ?X(?_XN)(?)),
+	?_Y :: Year,
+	yearNum(?_Y, ?_YN),
+	earliestCalcDate(vars, ?_firstDate),
+	latestCalcDate(vars, ?_secondDate),
+	?_firstDate^^\date[year -> ?_firstDateYear]@\basetype,
+	?_secondDate^^\date[year -> ?_secondDateYear]@\basetype,
+	?_firstDate^^\date[month -> ?_firstDateYMonth]@\basetype,
+	?_secondDate^^\date[month -> ?_secondDateMonth]@\basetype,
+	(
+		(
+			?_firstDateYear == ?_secondDateYear,
+			?_firstDateYMonth =< ?_XN,
+			?_secondDateMonth >= ?_XN
+		
+		) ;
+		(
+			?_firstDateYear !== ?_secondDateYear,
+			(
+				(
+					?_firstDateYear + 1 =:= ?_secondDateYear,
+					(
+							?_firstDateYMonth =< ?_XN ;
+							?_secondDateMonth >= ?_XN
+					)
+				);
+				(
+					?_firstDateYear + 2 =< ?_secondDateYear,
+					?_XN >= 0
+				)
+			)
+		)
+	),
+	(	
+		(
+			\neg leapYearMonth(?X),
+			\naf leapYear(?_Y) 
+		);
+		(
+			leapYearMonth(?X),
+			leapYear(?_Y)
+		)
+	).
+/*	*/
+/*
+?M :: Month[year -> ?_Y] :-
+	months(vars, ?_X(?_XN)(?)),
+	?_Y :: Year,
+	leapYearMonth(?_X),
+	leapYear(?_Y),
+	?M \is ?_X.
+*/
+\neg leapYearMonth(?M) :-
+	?M !== 'FebruaryLeap'.
+
+leapYearMonth(?M) :-
+	?M !== 'February'.
+	
+// Day of week logic   - ?_X[dayNum -> ?_D],
+monthNumIsGreaterThantwo(?_M) :-
+	?_M :: Month,
+	?_M[monthNum -> ?_MN],
+	?_MN > 2.
+
+monthCalcNum(?_M, ?Y, ?monthCalcYearModifier) :-
+	?_M :: Month,
+	?_M[monthNum -> ?_MN],
+	monthNumIsGreaterThantwo(?_M),
+	?Y \is (?_MN - 2),
+	?monthCalcYearModifier \is 0.
+
+monthCalcNum(?_M, ?Y, ?monthCalcYearModifier) :-
+	?_M :: Month,
+	?_M[monthNum -> ?_MN],
+	\naf monthNumIsGreaterThantwo(?_M),
+	?Y \is (?_MN + 10),
+	?monthCalcYearModifier \is 1.
+	
+	
+//	dayOfWeekCalcNum(?_X, ?W) :-
+//	?_X :: Day, dayNum(?_X, ?_DN), yearCalcNum(?_X, ?_YC), monthCalcNum(?_X, ?_MN), centuryCalcNum(?_X, ?_CN), {?W = ?_YC + ?_MN + ?_CN + ?_DN}.
+	
+	
+
+	
+// define number
+?_X[monthNum -> ?Y] :-
+	?_X :: Month,
+	months(vars, ?_X(?Y)(?)).
+
+// define number for February
+/*
+?_X[monthNum -> ?Y] :-
+	?_X :: Month,
+	?_X == 'February',
+	?Y \is 2.
+
+?_X[monthNum -> ?Y] :-
+	?_X :: Month,
+	?_X == 'FebruaryLeap',
+	?Y \is 2.	
+	
+?_X[monthNum -> ?Y] :-
+	?_X :: Month,
+	?_X == 'March',
+	?Y \is 3.
+
+?_X[monthNum -> ?Y] :-
+	?_X :: Month,
+	?_X == 'April',
+	?Y \is 4.
+
+?_X[monthNum -> ?Y] :-
+	?_X :: Month,
+	?_X == 'May',
+	?Y \is 5.
+
+?_X[monthNum -> ?Y] :-
+	?_X :: Month,
+	?_X == 'June',
+	?Y \is 6.
+	
+?_X[monthNum -> ?Y] :-
+	?_X :: Month,
+	?_X == 'July',
+	?Y \is 7.
+	
+?_X[monthNum -> ?Y] :-
+	?_X :: Month,
+	?_X == 'August',
+	?Y \is 8.
+	
+?_X[monthNum -> ?Y] :-
+	?_X :: Month,
+	?_X == 'September',
+	?Y \is 9.
+	
+?_X[monthNum -> ?Y] :-
+	?_X :: Month,
+	?_X == 'October',
+	?Y \is 10.
+	
+?_X[monthNum -> ?Y] :-
+	?_X :: Month,
+	?_X == 'November',
+	?Y \is 11.
+
+?_X[monthNum -> ?Y] :-
+	?_X :: Month,
+	?_X == 'December',
+	?Y \is 12.
+	*/
+
+	

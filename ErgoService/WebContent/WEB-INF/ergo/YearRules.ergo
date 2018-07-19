@@ -1,0 +1,73 @@
+// Year Rules
+
+years(vars,{1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2,26,2027,2028,2029,2030,2031,2032,2033,2034,2035,2036,2037,2038,2039,2040,2041,2042,2043,2044,2045,2046,2047,2048,2049,2050,2051,2052 }).
+
+// Generate Years,,
+?yearNumber :: Year :-
+	(
+		years(vars, ?yearNumber),
+		singleDateCheck(vars, ?_date),
+		?_date^^\date[year -> ?_Y]@\basetype, 
+		?yearNumber == ?_Y
+	);
+	(
+		years(vars, ?yearNumber),
+		earliestCalcDate(vars, ?_firstDate),
+		latestCalcDate(vars, ?_secondDate),
+		?_firstDate^^\date[year -> ?_firstDateYear]@\basetype,
+		?_secondDate^^\date[year -> ?_secondDateYear]@\basetype,
+		?yearNumber >= ?_firstDateYear,
+		?yearNumber =< ?_secondDateYear
+	).
+/*
+?Y :: Year :-
+	earliestCalcDate(vars, ?_firstDate),
+	latestCalcDate(vars, ?_secondDate),
+	( ?_firstDate^^\date[year -> ?Y]@\basetype ;
+	 ?_secondDate^^\date[year -> ?Y]@\basetype ).
+*/
+
+
+// determine Year as a number
+yearNum(?Y, ?N) :-
+	?Y :: Year,
+	\integer[toType(?Y) -> ?N]@\basetype.
+
+
+/*Determine centry.  Will stop working in approx 7000 years.*/
+centuryCalcNum(?_Year, ?Y) :-
+	?_Year :: Year,
+	yearNum(?_Year, ?_YN),
+	?Y \is truncate(div(?_YN, 100)).
+
+/*Determine Year.*/
+yearCalcNum(?_Year, ?Y) :-
+	?_Year :: Year,
+	yearNum(?_Year, ?_YN),
+	?Y \is (?_YN - (truncate(div(?_YN, 100)) * 100)).
+	
+	
+	// Leap Year logic
+leapYear(?Year) :-
+	?Year :: Year,
+	yearNum(?Year, ?_YN),
+		// is divisible by 4
+		?F \is rem(?_YN, 4),
+		?F == 0,
+		(
+			(
+			?H \is rem(?_YN, 100),
+			?H !== 0
+			);
+			(
+				(	
+				?H \is rem(?_YN, 100),
+				?H == 0
+				),
+				(
+				?G \is rem(?_YN, 400),
+				?G == 0
+				)
+			)
+		).
+	
