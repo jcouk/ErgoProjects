@@ -1,4 +1,4 @@
-the goal here was to create a rulebase that can determine the optimal combinatinos of shifts to workers.  
+the goal here was to create a rulebase that can determine the possible/optimal combinations of shifts to workers.  
 It's all kind of a mess right now because I was trying to understand and ideally fix the issue of running out of memory during processing.
 
 It does some cool stuff like find all valid combinations of shifts to each person, but when it comes to all combinations valid shifts to a person in combination with all other persons where each shift is unique..  it blows up.  Deep down i know i can do better.
